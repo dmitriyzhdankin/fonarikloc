@@ -1,0 +1,19 @@
+User-Agent: *
+Disallow: */sort:*
+Disallow: *norob*
+Disallow: */search*
+Disallow: */login*
+Disallow: */cart*
+Disallow: */callback*
+Disallow: */checkout*
+Disallow: */restore*
+Disallow: */999/*
+Disallow: *?pMin=*
+Disallow: */compare/*
+Disallow: *?pid*
+Disallow: /compare/
+Disallow: */sort:*
+Disallow: */forum/*
+Host: www.optimart.ua
+Sitemap: http://www.optimart.ua/sitemap.xml
+

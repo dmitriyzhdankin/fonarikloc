@@ -1,0 +1,60 @@
+User-Agent: Yandex
+Disallow: /*sort*
+Disallow: /*compare*
+Disallow: /login/
+Disallow: /zvonok
+Disallow: /signup/
+Disallow: /search
+Disallow: /tag/
+Disallow: /*/?view=price_min
+Disallow: /*/?view=table
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /*/?price_min
+Disallow: /*/?wiew=grid
+Disallow: /*/?wiew=table
+Disallow: /tag/
+Disallow: /blog/
+Host: fonarik.ua
+
+User-Agent: googlebot
+Disallow: /*sort*
+Disallow: /*compare*
+Disallow: /login/
+Disallow: /zvonok
+Disallow: /signup/
+Disallow: /search
+Disallow: /tag/
+Disallow: /*/?view=price_min
+Disallow: /*/?view=table
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /*/?price_min
+Disallow: /*/?wiew=grid
+Disallow: /*/?wiew=table
+Disallow: /tag/
+Disallow: /blog/
+
+User-Agent: *
+# wa shop *
+Disallow: /my/
+Disallow: /checkout/
+# wa shop
+Disallow: /*sort*
+Disallow: /*compare*
+Disallow: /login/
+Disallow: /zvonok
+Disallow: /signup/
+Disallow: /search
+Disallow: /tag/
+Disallow: /*/?view=price_min
+Disallow: /*/?view=table
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /*/?price_min
+Disallow: /*/?wiew=grid
+Disallow: /*/?wiew=table
+Disallow: /tag/
+Disallow: /blog/
+
+Sitemap: http://fonarik.ua/sitemap.xml

@@ -1,0 +1,487 @@
+<script type="text/javascript" src="{$wa_url}wa-content/js/jquery-plugins/jquery.cookie.js"></script>
+<script type="text/javascript" src="{$wa_theme_url}product.js"></script>
+{literal}
+<script>
+$(document).ready(function() {
+$("#ajax-contact-form").submit(function() {
+var str = $(this).serialize();
+
+$.ajax({
+type: "POST",
+url: "http://fonarik.ua/odin_click.php",
+data: str,
+success: function(msg) {
+
+if(msg == 'OK') {
+$("#ajax-contact-form").hide();
+$("#zakaz_30dney_text").hide();
+  result = '<div class="notification_ok">Спасибо! Ваша заявка принята! Наши менеджеры свяжутся с Вами в ближайшее время!<img id="notification_ok_close" src="http://fonarik.ua/wa-data/public/shop/themes/fonarik/img/close_program.png" onclick="{literal}close_pop_up_1clk(\'#zakaz_30dney_block\');{/literal}"/></div>';
+$('#note').html(result).fadeIn().delay(3000)
+} else {
+result = msg;
+$('#note').html(result).fadeIn().delay(800).fadeOut("slow");
+}
+
+
+$(".btn").on( "click", function() {
+
+$.when( msg == 'OK' ).done(function() {
+
+});
+});
+}
+});
+return false;
+});
+});
+</script>
+{/literal}
+<div id="sidebar" class="grid_3">
+<div class="aside">
+<div class="left_menu">
+<ul class="menu-h">
+    <li class="current"><a href="{$wa->getUrl('/frontend/product', ['product_url' => $product.url])}">[`Overview`]</a></li>
+    <li><a href="{$wa->shop->productUrl($product, 'reviews')}">[`Reviews`]</a> <span class="hint" itemprop="reviewCount">{count($product.reviews)}</span></li>
+    {foreach $product.pages as $p}
+    <li{if $page.id == $p.id} class="current"{/if}><a href="{$wa->shop->productUrl($product, 'page', ['page_url' => $p.url])}">{$p.name|escape}</a></li>
+    {/foreach}
+
+</ul>
+</div>
+</div>
+    {include file="sidebar.html"}
+</div><!-- .sidebar -->
+<div id="content" class="grid_9" itemscope itemtype="http://schema.org/Product">
+
+<h1 class="page_title" itemprop="name">{$product.name}</h1>
+
+   <div class="product_page">
+   
+   
+       {if $product.images} <!-- image gallery -->
+       <div class="grid_4 img_slid" id="products">
+            <!-- main image -->
+            <div class="image">
+                            
+                    {$wa->shop->getImageBadgeHtml($product.images[$product.image_id])}
+                    {$bigImage =  $wa->shop->getProductImgHtml($product, '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}                
+               <div class="preview slides_container">
+					<div class="prev_bg">
+                       <a href="{$bigImage}" class="jqzoom" rel='gal1' title="">
+							{$wa->shop->getProductImgHtml($product, '200x200', ['itemprop' => 'image', 'id' => 'product-image', 'title' => $product.name|escape|cat:' ':strip_tags($product.summary)|escape, 'alt' => $product.name])}
+						</a>
+					</div>
+				</div>
+            </div>
+            <!-- gallery -->
+            {if count($product.images) > 1}
+                <ul class="pagination clearfix" id="thumblist">
+                    {foreach $product.images as $image}       
+                    {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
+                                    
+                    <li><a href='javascript:void(0);' rel="&#123;gallery: 'gal1', smallimage: '{$wa->url(true)}{$bImage}',largeimage: '{$wa->url(true)}{$bImage}'&#125;">
+                    {$wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '96x96', ['itemprop' => 'image', 'alt' => $product.name])} 
+                     </a></li>
+                    {/foreach}
+                </ul>
+				<div class="next_prev">
+					<a id="img_prev" class="arows" href="#"><span>Вперёд</span></a>
+					<a id="img_next" class="arows" href="#"><span>Назад</span></a>
+				</div><!-- . -->
+            {/if}
+            </div>
+            {else}
+            <div class="grid_4 img_slid" id="products">
+            <!-- main image -->
+            <div class="image">               
+               <div class="preview slides_container">
+					<div class="prev_bg">
+                       <a href="">
+							 <img src="{$wa_theme_url}img/dummy200.png" alt="{$product.name}"/>
+						</a>
+					</div>
+				</div>
+            </div>
+            </div>
+          
+            {/if}
+        
+        
+        <form method="post" action="{$wa->getUrl('/frontendCart/add')}" class="addtocart">
+            
+            <div class="grid_5">
+			<div class="entry_content">
+            <div class="review"  itemprop="aggregateRating"
+    itemscope itemtype="http://schema.org/AggregateRating">        
+            {if !empty($product.rating) && $product.rating > 0}
+    <span class="rating nowrap" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" title="{sprintf('[`Average user rating: %s / 5`]', $product.rating)}">
+        {$wa->shop->ratingHtml($product.rating, 16)}
+        <span itemprop="ratingValue" style="display: none;" itemprop="ratingValue">{$product.rating}</span>
+        <span itemprop="reviewCount" style="display: none;" itemprop="ratingCount">{$product.rating_count}</span>
+        <span itemprop="bestRating" style="display: none;">5</span>
+    </span>
+    <span>{$product.rating_count} оценок</span>
+    {else}
+    <span class="rating nowrap">
+    <i class="icon16 star-empty"></i>
+    <i class="icon16 star-empty"></i>
+    <i class="icon16 star-empty"></i>
+    <i class="icon16 star-empty"></i>
+    <i class="icon16 star-empty"></i>
+    </span>
+    {/if}   
+                
+            <a href="reviews/" class="add_review">Оставить отзыв</a></div>
+            <p>{$product.summary}</p>
+         
+         {if $product.categories}
+         <p id="product-categories">
+            [`Categories`]:
+                {foreach $product.categories as $c}
+                <span class="product-info"><a href="{$wa->getUrl('/frontend/category', ['category_url' => $c.full_url])}">{$c.name}</a></span>
+                {/foreach}
+            </p>
+        {/if}
+
+        <!-- tags -->
+        {if $product.tags}
+            <span class="tags" id="product-tags">
+                [`Tags`]:
+                <span class="product-info">
+                {foreach $product.tags as $t}
+                 {$t}, 
+                {/foreach}
+                </span>
+            </span>
+        {/if}
+            
+            {if $services}
+            <!-- services -->
+            <div class="services">
+                {foreach $services as $s}
+                <div id="service-{$s.id}">
+                    <label>
+                        <input {if !$product_available}disabled="disabled"{/if} type="checkbox" name="services[]" value="{$s.id}"> {$s.name} {if $s.price && !isset($s.variants)}(+<span class="service-price">{shop_currency($s.price, $s.currency)}</span>){/if}
+                    </label>
+                    {if isset($s.variants)}
+                    <select class="service-variants" name="service_variant[{$s.id}]" disabled>
+                        {foreach $s.variants as $v}
+                        <option id="service-variant-{$v.id}" value="{$v.id}">{$v.name} (+{shop_currency($v.price, $s.currency)})</option>
+                        {/foreach}
+                    </select>
+                    {/if}
+                </div>
+                {/foreach}
+            </div>
+            {/if}
+            
+             {if count($product.skus) > 1}
+                {* display sku selector *}
+                <ul class="skus" id="product-skus">
+                    {$product_available = false}
+                    {foreach $product.skus as $sku}
+                  
+                        {$sku_available = ($sku.available && $sku.count !== 0)}
+                        <li itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+                            <label{if !$sku_available} class="disabled"{/if}>
+                                <input name="sku_id" type="radio" value="{$sku.id}"{if !$sku_available} disabled="true"{/if}{if $sku.id == $product.sku_id} checked="checked"{/if} data-price="{shop_currency($sku.price)}"{if $sku.image_id} data-image-id="{$sku.image_id}"{/if}
+                              {if $sku.sku} data-sku="{$sku.sku}"{/if}> {$sku.name}
+                                <meta itemprop="price" content="{$sku.price}">
+                                {if $sku.count === 0}
+                                    <em class="nowrap small out-of-stock">[`Out of stock`]</em>
+                                   
+                                {else}
+                                   
+                                {/if}
+                            </label>
+                        </li>
+                        {$product_available = $product_available or $sku_available}
+                    {/foreach}
+                </ul>
+                <script>
+                   
+                        $("#product-skus input").click(function () {
+                                       
+                            var sku_id = $(this).val();
+                            var sku_image = $(this).attr('data-image-id'); 
+                            var sku_sku = $(this).attr('data-sku'); 
+                           
+                            $('#product_sku').html(sku_sku);               
+                          
+                        });
+                        $("#product-skus input:radio:checked").click();
+
+                </script>
+            {else}
+                {* in case there is only one sku, don't display the selector *}
+                {$sku = $product.skus[$product.sku_id]}
+                {$product_available = ($sku.available and $sku.count !== 0)}
+            {/if}
+            
+            <div class="ava_price" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+				<div class="availability_sku">
+                        
+<!-- sku -->
+<div style="display:none;">
+            {if count($product.skus) > 1}
+                {* display sku selector *}
+            {else}
+                {* in case there is only one sku, don't display the selector *}
+                {$sku = $product.skus[$product.sku_id]}
+                {$product_available = ($sku.available and $sku.count !== 0)}
+                {if !$product_available}
+                     
+                     <p><em class="bold out-of-stock nowrap">[`Out of stock`]</em></p>
+                {else}
+                    
+                     <input name="sku_id" type="hidden" value="{$product.sku_id}">
+                {/if}
+
+
+            {/if}
+           
+ </div>                   
+                        
+							<div class="availability">
+								Наличие:{if $product_available}
+                                <link itemprop="availability" href="http://schema.org/InStock" >
+                                <span>Есть на складе</span>{else}                                 
+                                <em class="bold out-of-stock nowrap" style="color:#F00;">[`Out of stock`]</em>
+                                <link itemprop="availability" href="http://schema.org/OutOfStock" >{/if}
+							</div>
+							<div class="sku">
+								Артикул: <span id="product_sku" itemprop="sku">{$sku.sku}</span>
+							</div>
+						</div><!-- .availability_sku -->
+
+						<div class="price">
+							<div class="price_new" itemprop="price" value="{shop_currency($product.price|ceil)}">{shop_currency($product.price|ceil)}</div>
+							<div class="price_old"></div>
+						</div><!-- .price -->
+					</div><!-- .ava_price -->
+			<div class="yashare-auto-init" style="margin: 10px 0;" data-yashareL10n="ru" data-yashareType="none" data-yashareQuickServices="yaru,vkontakte,facebook,twitter,odnoklassniki,moimir,lj,moikrug,gplus"></div>
+            <div class="block_cart">            
+			<div class="obn_like">
+				<div class="obn">
+                 <a {if $compare}style="display:none"{/if} class="compare-add inline-link" data-product="{$product.id}" href="#"><i>[`Add to comparison table`]</i></a>
+                 <a {if !$compare}style="display:none"{/if} class="compare-remove inline-link" data-product="{$product.id}" href="#"><i>[`Remove from comparison table`]</i></a>
+                 <br/><a id="compare-link" {if count($compare) lt 2}style="display:none"{/if} href="{$wa->getUrl('/frontend/compare/', ['id' => implode(',', $compare) ])}">[`Compare`] <span class="count">{count($compare)}</span></a>
+                </div>
+				<!--<div class="like"><a href="#" class="like">Add to Wishlist</a></div>-->
+			</div>
+            <div class="cart">
+            <input onclick="open_pop_up('#onclick_buy');" type="submit" {if $product.price eq 0 or !$product_available }disabled="disabled" style="background:#CCC;"{/if} value="Купить" class="bay" />               
+                <input type="text" name="quantity" class="number" value="1">                
+                <span>Количество:</span>
+            </div>
+			{literal}
+			
+			{/literal}
+              <div class="1click_button" id="button_1click" onclick="{literal}open_pop_up_1clk('#zakaz_30dney_block');{/literal}">Купить в один клик</div>
+            <div class="clear"></div>
+            </div>
+              </div>
+          </div>
+     </form>
+<div id="zakaz_30dney_block">
+            	<div id="zakaz_30dney">
+					<div id="zakaz_30dney_wrapper">
+						<div id="fields">
+							<span id="zakaz_30dney_text">Оставьте Ваш телефон и мы перезвоним Вам в течение 30 минут и поможем оформить заказ</span>
+							<div id="note"></div>
+							<form id="ajax-contact-form" name="1click" action="#">
+								<span style="display: block;width: 400px;margin: 0 auto;"><label>+38</label>
+                                  <input type="text" name="tel" value="Введите № телефона" onfocus="this.value = ''" class="input_text" maxlength="15"></span>
+								<input class="btn" type="submit" name="submit" value="Жду звонка">
+								<input type="hidden" name="tovar" value="{$product.name}">
+                      			<input type="hidden" name="tovar_url" value="http://fonarik.ua{$wa->shop->productUrl($product, 'page', ['page_url' => $p.url])}">
+							</form>
+						</div>
+					</div>
+				</div>
+            </div>    
+        
+    
+    
+			<div class="clear"></div>
+
+	<div class="grid_9" >
+		<div id="wrapper_tab" class="tab1">
+					<a href="#" class="tab5 tab_link">Описание</a>
+                    <a href="#" class="tab2 tab_link">Характеристики</a>
+                    {if count($product.images) > 1}<a href="#" class="tab3 tab_link">Фото</a>{/if}
+					<a href="#" class="tab4 tab_link">Отзывы {if $reviews_total_count}({$reviews_total_count}){/if}</a>
+                    <a href="#" class="tab1 tab_link">Всё</a>
+        <div class="clear"></div>
+
+		<div class="tab5 tab_body">
+        {if $product.description}
+            <div class="description" id="product-fulldescription" itemprop="description">{$product.description}</div>
+        {/if}
+        </div>
+        
+        <div class="tab2 tab_body">
+         {if $product.features}
+            <table class="features" id="fullproduct-features" >
+                {foreach $product.features as $f_code => $f_value}
+                    <tr>
+                        <td class="bg">
+                            {$features[$f_code].name}
+                        </td>
+                        <td >
+                            {if is_array($f_value)}
+                            {implode(', ', $f_value)}
+                            {else}
+                            {$f_value}
+                            {/if}
+                        </td>
+                    </tr>
+                {/foreach}
+            </table>
+        {/if}
+        </div>
+        
+        
+      <div class="tab3 tab_body" style="padding-top:15px;">
+       {if count($product.images) > 1}
+              
+                    {foreach $product.images as $image}       
+                    {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
+                                    
+                    <div style="float:left;width:702px;margin-bottom:20px;padding:14px;border:1px #ccc solid;"><img src="{$wa->url(true)}{$bImage}" alt="{$product.name}" width="702"/></div>
+                    {/foreach}
+               
+            {/if}
+      </div>
+        
+        <div class="tab4 tab_body">
+        <div class="reviews">
+            <h4>{sprintf('[`%s reviews`]', $product.name)}</h4>
+            <ul class="comments">
+                {foreach $reviews as $review}
+                    <li data-id={$review.id} data-parent-id="0">
+                        {include file="review.html" reply_allowed=false inline}
+                    </li>
+                {/foreach}
+            </ul>
+        </div>
+        
+        {if !$reviews}
+            <p>{sprintf('[`Be the first to <a href="%s">write a review</a> of this product!`]', 'reviews/')}</p>
+        {else}
+            {sprintf('[`Read <a href="%s">all %d reviews</a> on %s`]', 'reviews/', $reviews_total_count, $product.name)}
+        {/if}
+      
+      </div>
+        
+        
+    <div class="tab1 tab_body">
+    {if $product.description}
+    <div class="description" id="product-description">{$product.description}</div>
+    {/if}
+         {if $product.features}
+            <table class="features" id="product-features">
+                {foreach $product.features as $f_code => $f_value}
+                    <tr>
+                        <td class="bg">
+                            {$features[$f_code].name}
+                        </td>
+                        <td >
+                            {if is_array($f_value)}
+                            {implode(', ', $f_value)}
+                            {else}
+                            {$f_value}
+                            {/if}
+                        </td>
+                    </tr>
+                {/foreach}
+            </table>
+        {/if}
+      	{if count($product.images) > 1}
+              
+                    {foreach $product.images as $image}       
+                    {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
+                                    
+                    <div style="float:left;width:702px;margin-bottom:20px;padding:14px;border:1px #ccc solid;">
+                      <img src="{$wa->url(true)}{$bImage}" alt="{$product.name}" width="702"/></div>
+                    {/foreach}
+               
+        {/if}
+        <div class="reviews">
+            <h4>{sprintf('[`%s reviews`]', $product.name)}</h4>
+            <ul class="comments">
+                {foreach $reviews as $review}
+                    <li data-id={$review.id} data-parent-id="0">
+                        {include file="review.html" reply_allowed=false inline}
+                    </li>
+                {/foreach}
+            </ul>
+        </div>
+        {if !$reviews}
+            <p>{sprintf('[`Be the first to <a href="%s">write a review</a> of this product!`]', 'reviews/')}</p>
+        {else}
+            {sprintf('[`Read <a href="%s">all %d reviews</a> on %s`]', 'reviews/', $reviews_total_count, $product.name)}
+        {/if}
+    </div>  
+    
+    
+    </div>
+    </div>
+    <div class="clear"></div>
+
+        {$upselling = $product->upSelling()}
+        {if $upselling}
+                <div class="related" style="margin-bottom:25px;">
+				<div class="c_header" style="margin-bottom:20px;">
+					<div class="grid_7">
+						<h2>[`See also`] 
+                {$compare_ids = array_merge(array($product.id), array_keys($upselling))}
+                <a href="{$wa->getUrl('/frontend/compare', ['id' => implode(',', $compare_ids)])}">Сравнить все</a>
+</h2>
+					</div><!-- .grid_7 -->
+
+					<div class="grid_2">
+						<a id="next_c1" class="next arows" href="#"><span>Вперёд</span></a>
+						<a id="prev_c1" class="prev arows" href="#"><span>Назад</span></a>
+					</div><!-- .grid_2 -->
+				</div><!-- .c_header -->
+
+				<div class="list_carousel">
+                <ul id="list_product" class="list_product">
+                {include file="list-thumbs.html" products=$upselling}
+                 </ul><!-- #list_product -->
+				</div><!-- .list_carousel -->
+                </div>
+		 <div class="clear"></div>
+        {/if}
+        
+        {$crossselling = $product->crossSelling(0)}
+        {if $crossselling}
+                <div class="related" style="margin-bottom:25px;">
+				<div class="c_header" style="margin-bottom:20px;">
+					<div class="grid_7">
+						<h2>Также покупают:</h2>
+					</div><!-- .grid_7 -->
+
+					<div class="grid_2">
+						<a id="next_c2" class="next arows" href="#"><span>Вперёд</span></a>
+						<a id="prev_c2" class="prev arows" href="#"><span>Назад</span></a>
+					</div><!-- .grid_2 -->
+				</div><!-- .c_header -->
+
+				<div id="crossselling" class="list_carousel">
+                <ul id="list_product2" class="list_product">
+                 {include file="list-thumbs.html" products=$crossselling}
+                 </ul><!-- #list_product -->
+				</div><!-- .list_carousel -->
+                 </div>
+                 </div>
+                 </div>
+                 
+		 <div class="clear"></div>
+
+        {/if}        
+ 
+
+
+
