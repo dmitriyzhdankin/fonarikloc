@@ -105,20 +105,30 @@ function close_pop_up_1clk(box) {
 
   <div class="clear"></div>
   <!-- navigation breadcrumbs --> 
- {if isset($breadcrumbs)}       
-  <div class="container_12" itemscope itemtype="http://schema.org/WebPage">
+{if isset($breadcrumbs)}       
+<div class="container_12" itemscope itemtype="http://schema.org/WebPage">
     <div class="grid_12">
-
-       <div class="breadcrumbs" itemprop="breadcrumb">
-                    <a href="{$wa_app_url}">{$wa->accountName()}</a>&nbsp;<span>&#8250;</span>
-                    {if $breadcrumbs}
-                        {foreach $breadcrumbs as $breadcrumb}
-                            <a href="{$breadcrumb.url}">{$breadcrumb.name}</a>&nbsp;<span>&#8250;</span>
-                        {/foreach}
-                    {else} <span>&#8250;</span> {/if}
-					{if isset($product.name) && $wa->currentUrl(0) eq $wa->shop->productUrl($product)}<span style="font-size:11px;">{$product.name}</span>{/if}
-                </div></div></div>
+        <div class="breadcrumbs">
+            <div itemscope itemtype="http://schema.org/Breadcrumb">
+                <a href="{$wa_app_url}" itemprop="url"><span class="breadcrumbs-name" itemprop="title">{$wa->accountName()}</span></a>&nbsp;<span class="delemiter">&#8250;</span>
+            </div>
+            {if $breadcrumbs}
+                {foreach $breadcrumbs as $breadcrumb}
+                    <div itemscope itemtype="http://schema.org/Breadcrumb">
+                        <a href="{$breadcrumb.url}" itemprop="url"><span class="breadcrumbs-name" itemprop="title">{$breadcrumb.name}</span></a>&nbsp;<span class="delemiter">&#8250;</span>
+                    </div>
+                {/foreach}
             {/if}
+            {if isset($product.name) && $wa->currentUrl(0) eq $wa->shop->productUrl($product)}
+                <div itemscope itemtype="http://schema.org/Breadcrumb">
+                    <span class="breadcrumbs-name" style="font-size:11px;" itemprop="title">{$product.name}</span>
+                    <link itemprop="url" href="{$product.url}"/>
+                </div>
+            {/if}
+        </div>
+    </div>
+</div>
+{/if}
 <div id="main">  
   <div class="container_12">
             {$content}

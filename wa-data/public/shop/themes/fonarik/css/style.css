@@ -1106,6 +1106,21 @@ background: transparent;
 	margin: 0;
 }
 
+.breadcrumbs div {
+    display: inline-block;
+    float: left;
+}
+.breadcrumbs a .breadcrumbs-name:hover {
+    text-decoration: underline;
+    color: #444;
+}
+.breadcrumbs .breadcrumbs-name {
+    margin: 0;
+}
+.breadcrumbs .delemiter {
+    margin: 0 0 0 5px;
+}
+
 /********
  * Main *
  ********/
