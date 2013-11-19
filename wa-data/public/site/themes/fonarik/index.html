@@ -17,20 +17,6 @@
 	{/if}
 	{include file="`$wa_active_theme_path`/head.html" inline}
 	{$wa->headJs()}
-  
-  	<script type="text/javascript">
-
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-6681162-17']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
   <script type="text/javascript">
 				$(document).ready (function() {
 					if ($('.price_new').attr('value')=="0 грн." && $('.bay').attr('disabled')== 'disabled') {
