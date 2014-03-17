@@ -122,7 +122,7 @@
 <body><div class="container_12">
     <div id="top">
     
-    <a href="/" title="fonarik.loc" id="top_home"></a>
+    <a href="/" title="Fonarik.ua" id="top_home"></a>
     
     
       <div class="grid_3" id="top_pages_nav">
@@ -142,8 +142,8 @@
 
     <div id="branding">
       <div class="grid_3" style="width:auto;float:left;display:block;margin:25px 0px 0px 12px;" >       
-          <a href="/" title="fonarik.loc" style="width:auto;margin:0px;padding:0px;">
-          <img src="/wa-data/public/shop/themes/fonarik/images/logo.png" alt="fonarik.loc"></a>
+          <a href="/" title="Fonarik.ua" style="width:auto;margin:0px;padding:0px;">
+          <img src="/wa-data/public/shop/themes/fonarik/images/logo.png" alt="Fonarik.ua"></a>
       </div><!-- .grid_3 -->
 
 
@@ -361,16 +361,16 @@ mysql_query('SET NAMES utf8');
     <div class="f_navigation">
       <div class="container_12">
         <div class="grid_3">
-        <a href="/" title="fonarik.loc" style="width:auto;margin:0px;padding:0px;">
-          <img src="/wa-data/public/shop/themes/fonarik/images/logo.png" alt="fonarik.loc"></a>  
+        <a href="/" title="Fonarik.ua" style="width:auto;margin:0px;padding:0px;">
+          <img src="/wa-data/public/shop/themes/fonarik/images/logo.png" alt="Fonarik.ua"></a>  
         </div><!-- .grid_3 -->
 
         <div class="grid_2">
-          <div style="font-size:14px;"><a href="http://fonarik.loc/dostavka/">Доставка</a></div>
-          <div style="font-size:14px;"><a href="http://fonarik.loc/oplata/">Оплата</a></div>
-          <div style="font-size:14px;"><a href="http://fonarik.loc/garantiya/">Гарантия</a></div>
-          <div style="font-size:14px;"><a href="http://fonarik.loc/vozvrat/">Возврат</a></div>
-          <div style="font-size:14px;"><a href="http://fonarik.loc/kontakty/">Контакты</a></div>
+          <div style="font-size:14px;"><a href="http://fonarik.ua/dostavka/">Доставка</a></div>
+          <div style="font-size:14px;"><a href="http://fonarik.ua/oplata/">Оплата</a></div>
+          <div style="font-size:14px;"><a href="http://fonarik.ua/garantiya/">Гарантия</a></div>
+          <div style="font-size:14px;"><a href="http://fonarik.ua/vozvrat/">Возврат</a></div>
+          <div style="font-size:14px;"><a href="http://fonarik.ua/kontakty/">Контакты</a></div>
         </div><!-- .grid_3 -->
 
 
@@ -389,23 +389,19 @@ mysql_query('SET NAMES utf8');
         <h4>Представительства</h4>   
         <div class="footer_time" style="margin-bottom:20px;"><span class="phone"></span><p>(044) 392-19-00 - Киев
           <br/>(067) 574-85-08 - Харьков</p></div>
-        <div class="footer_time"><span class="mail"></span><p><a href="mailto:info@fonarik.loc" title="mailto">info@fonarik.loc</a></p></div>  
+        <div class="footer_time"><span class="mail"></span><p><a href="mailto:info@fonarik.ua" title="mailto">info@fonarik.ua</a></p></div>  
                          
         </div><!-- .grid_3 --> 
         
          <div class="grid_12">
             <div id="copyright" style="float:left;width:100%;padding-top:10px;margin:20px 0px 20px 0px;border-top:1px #1386b3 solid;">
-                <span style="float:left;"><a href="/">© 2013 / fonarik.loc  Интернет-магазин</a></span>
+                <span style="float:left;"><a href="/">© 2013 / Fonarik.ua  Интернет-магазин</a></span>
                 <span style="float:right;">&copy; разработка: <a href="http://code201.net">Code201.net</a></span>
             </div>  
          </div>  
 
         <div class="clear"></div>        
       </div>
-      <div style="position:absolute;top:-6631px;">This is often clearly 2(X)IST's first foray into watches, but they're away and off and away to a great beginning. Though some little mistakes, specially when it calls for packaging are apparent. If you notice little products of black lint across the trio of watches we received for review. That's inside the faux-velvet interior within the boxes this can be a dreadful complement to plastic or plastic. The metal-cased New You'll have the ability to City watches fare best, but imagine purchasing certainly one of people lovely all-whitened-colored models, simply to take it out of the packaging <a href="http://www.watchesrace.com">replica watches for men</a> with persistent products of black link stuck throughout it. Sure you'll have the ability to rinse the timepiece off, but stuffed to do this. I'd attack the timepiece one of individuals compressed air blowers to wash it probably. There is a handful of the three dimensional glasses that turned up among the boxes. I have no idea what individuals work for, however am wanting it isn't for viewing more pictures of dudes putting on under clothes.
-One component of the timepiece that does coincide while using the under clothes may be the strap. Such as the waist across the briefs, there's a sizable "2(X)IST" logo design design <a href="http://www.nicewatchreplica.com">copy watches</a> design across the (fortunately) inside within the plastic strap. Furthermore compared to that, this really is frequently a distinctive experience. The issue design takes probably most likely probably the most inspiration from ). We enjoy it when <a href="http://www.filza7ma.com">quality replica watches</a> interesting boutique brands get "homaged" as opposed to the large males. This is not exactly an inexpensive method of putting on a Linde Werdelin, but it's kind of close.
-The Brand-new You'll have the ability to City watch is 44mm wide but wears bigger because of the big crown guard and wide, extended lugs. I'd say just just in case your arms are 6.75 inches or under you may want to try one on first before purchasing to be certain the lugs don't jut out beyond the side of the arms. Such as the Linde Werdelin Spidolite, the brand-new You'll have the ability to City watch has numerous situation skeletonization, and a little of the within the bezel. It'll make for nearly any awesome look, then when it calls for style, there's something being pointed out relevant for this working better in a affordable watch since you can not desire to use similar to this each day.</div>
-
       
       
     </div><!-- .f_navigation -->

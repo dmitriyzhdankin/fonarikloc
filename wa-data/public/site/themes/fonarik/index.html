@@ -33,6 +33,36 @@
 						$('#button_1click').css('background', '-ms-linear-gradient(90deg, rgb(210, 20, 20) 30%, rgb(250, 20, 20) 70%)');
 						$('#button_1click').css('background', 'linear-gradient(0deg, rgb(210, 20, 20) 30%, rgb(250, 20, 20) 70%)');
 					} else {}
+
+
+	$("#ajax-contact-form").submit(function() {
+	var str = $(this).serialize();
+
+	$.ajax({
+	type: "POST",
+	url: "http://fonarik.ua/odin_click.php",
+	data: str,
+	success: function(msg) {
+
+	if(msg == 'OK') {
+	$("#ajax-contact-form").hide();
+	$("#zakaz_30dney_text").hide();
+	result = '<div class="notification_ok">Спасибо! Ваша заявка принята! Наши менеджеры свяжутся с Вами в ближайшее время!</div>';
+	$('#note').html(result).fadeIn().delay(3000)
+	} else {
+	result = msg;
+	$('#note').html(result).fadeIn().delay(800).fadeOut("slow");
+	}
+
+$(".btn").on( "click", function() {
+$.when( msg == 'OK' ).done(function() {
+});
+});
+}
+});
+return false;
+});
+
 				});
 			</script>
   <style type="text/css">  

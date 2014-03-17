@@ -565,6 +565,9 @@ class shopYandexmarketPluginRunController extends waLongActionController
                                     $product_xml->appendChild($this->dom->createElement($field, $value_item));
                                 }
                             } elseif (empty($info['attribute'])) {
+                                if( $field == 'currencyId' ) {
+                                    $value = wa()->getConfig()->getCurrency();
+                                }
                                 $child = $this->dom->createElement($field, $value);
                                 if ($field == 'categoryId') {
                                     $child->setAttribute('type', 'Own');

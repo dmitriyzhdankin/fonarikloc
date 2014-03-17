@@ -104,7 +104,8 @@ class shopFrontendProductAction extends shopFrontendAction
         $this->view->assign('product', $product);
 
         $this->getBreadcrumbs($product);
-
+        $this->getProductsFromSameCategory($product);
+        
         // get services
         $type_services_model = new shopTypeServicesModel();
         $services = $type_services_model->getServiceIds($product['type_id']);
@@ -322,5 +323,19 @@ class shopFrontendProductAction extends shopFrontendAction
                 'datetime DESC',
                 array('escape' => true)
         );
+    }
+    
+    protected function getProductsFromSameCategory( shopProduct $product ) {
+        if ($product['category_id']) {
+            $collection = new shopProductsCollection('category/'.$product['category_id']);
+            $same_products = $collection->getProducts('*',1000);
+            if( $same_products ) {
+                $category_model = new shopCategoryModel();
+                $category = $category_model->getById($product['category_id']);
+                
+                $this->view->assign('same_category', $category['name']);
+                $this->view->assign('same_products', $same_products);
+            }
+        }
     }
 }

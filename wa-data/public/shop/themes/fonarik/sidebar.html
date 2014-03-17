@@ -11,11 +11,32 @@
         <a href=":url" title=":title">:name</a>' selected=$wa->param('page_id')}
      </div></div>
     {/if}
-
+    
+    {if isset($product) }
+    {$crossselling = $product->crossSelling(0)}
+      {if $crossselling}
+			<div class="related" style="margin-bottom:25px;">
+				<div class="c_header" style="margin-bottom:20px;">
+					<div class="grid_7">
+						<h2>Также покупают:</h2>
+					</div><!-- .grid_7 -->
+					<div class="grid_2">
+						<a id="next_c2" class="next arows" href="#"><span>Вперёд</span></a>
+						<a id="prev_c2" class="prev arows" href="#"><span>Назад</span></a>
+					</div><!-- .grid_2 -->
+				</div><!-- .c_header -->
+				<div id="crossselling-sidebar" class="list_carousel">
+					<ul id="list_product3" class="list_product">
+						{include file="list-thumbs.html" products=$crossselling}
+					</ul><!-- #list_product -->
+				</div><!-- .list_carousel -->
+            </div>
+		{/if}
+                {/if}
     <!-- category tree -->
  {if $categories = $wa->shop->categories()} 
   {if !isset($category) && !$category.id}
-  <div class="aside" id="categories_nav">
+  {*<div class="aside" id="categories_nav">
 		<h3>Категории</h3>            
 		<div class="left_menu"><ul>
         {foreach $categories as $c}
@@ -24,7 +45,7 @@
         {/if}
         {/foreach}
      </ul></div><!-- .left_menu -->
-  </div>
+  </div> *}
   {else}
   {foreach $categories as $c}
    {if $category.id == $c.parent_id}
@@ -115,3 +136,20 @@
             {/foreach}
     </div>
     {/if}-->
+    {if $same_products }
+    <!-- products from same category -->
+    <div class="same-products">
+        <h3>{$same_category}:</h3>
+        <div class="same-products-list">
+            {foreach $same_products as $p}
+                <div class="product-sidebar">
+                    <a href="{$wa->getUrl('/frontend/product', ['product_url' => trim($p.frontend_url,'/')],true)}" title="{$p.name}">
+                        <div class="product-img">{$wa->shop->getProductImgHtml($p, '50x50', ['itemprop' => 'image', 'id' => 'product-image', 'title' => $p.name|escape|cat, 'alt' => $p.name])}</div>
+                        <div class="product-name">{$p.name}</div>
+                    </a>
+                </div>
+            
+            {/foreach}
+        </div>
+    </div>
+    {/if}

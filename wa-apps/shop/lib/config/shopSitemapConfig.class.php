@@ -52,7 +52,7 @@ class shopSitemapConfig extends waSitemapConfig
             ), true);
             foreach ($products as $p) {
                 $url = str_replace(array('%PRODUCT_URL%', '%CATEGORY_URL%'), array($p['url'], isset($p['category_url']) ? $p['category_url'] : ''), $product_url);
-                $images="http://fonarik.loc/wa-data/public/shop/products/";
+                $images="http://fonarik.ua/wa-data/public/shop/products/";
                 $images .= ($p['id'] % 100)."/";
                 if(floor($p['id']/100) <10) {$images .= "0".floor($p['id']/100)."/";}else{$images .= floor($p['id']/100)."/";}
                 $images .= $p['id']."/images/".$p['image_id']."/".$p['image_id'].".750x0.png";

@@ -228,8 +228,10 @@ class Swift_Mime_Headers_MailboxHeader extends Swift_Mime_Headers_AbstractHeader
                 $address = $value;
                 $name = null;
             }
-            $this->_assertValidAddress($address);
-            $actualMailboxes[$address] = $name;
+            if($address) {
+                $this->_assertValidAddress($address);
+                $actualMailboxes[$address] = $name;
+            }
         }
 
         return $actualMailboxes;
@@ -304,6 +306,7 @@ class Swift_Mime_Headers_MailboxHeader extends Swift_Mime_Headers_AbstractHeader
      */
     private function _assertValidAddress($address)
     {
+        
         if (!preg_match('/^' . $this->getGrammar()->getDefinition('addr-spec') . '$/D',
             $address))
         {

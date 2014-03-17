@@ -55,7 +55,7 @@ class shopProductReviewsModel extends waNestedSetModel
         }
         $sql .= " ORDER BY ".($order ? $order : $this->left);
         if ($count !== null) {
-            $sql .= " LIMIT ".(int)$offset.", ".(int)$count;
+            /*$sql .= " LIMIT ".(int)$offset.", ".(int)$count;*/
         }
         $reviews = $this->query($sql)->fetchAll('id');
         $this->extendItems($reviews, $options);
@@ -65,7 +65,7 @@ class shopProductReviewsModel extends waNestedSetModel
     public function getListDefaultOptions()
     {
         return array(
-            'offset' => 0,
+            'offset' => 15,
             'limit'  => 50,
             'escape' => true,
             'where'  => array()

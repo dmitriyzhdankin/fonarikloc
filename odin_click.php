@@ -7,8 +7,8 @@ $tovar = htmlspecialchars($_POST["tovar"]);
 $tovar_url = htmlspecialchars($_POST["tovar_url"]);
 $tel = htmlspecialchars($_POST["tel"]);
 $error = "";
-$name = " - заказ в один клик с сайта fonarik.loc";
-$email = "fonarik.loc";
+$name = " - заказ в один клик с сайта FONARIK.UA";
+$email = "FONARIK.UA";
 $rand = rand(0, 1000);
 /*if(!$name)
 {
@@ -54,7 +54,7 @@ $error .= "Введите корректный телефон.<br />";
 }
 if(!$error)
 {
-$subject ="Заказ в один клик с сайта fonarik.loc";
+$subject ="Заказ в один клик с сайта FONARIK.UA";
 $message ="Клиент не захотел заполнять поля при оформлении заказа и хочет быстро оформить заказ по телефону.\n\nТовар, который хочет купить клиент: ".$tovar."\n\nСсылка на товар: " .$tovar_url."\n\nТелефон клиента для обратной связи: +38 ".$tel."\n\n";
 $mail = mail("info@fonarik.com", $subject, $message,
 

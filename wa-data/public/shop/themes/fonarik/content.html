@@ -1,5 +1,14 @@
 {literal}
 <script type="text/javascript">
+	function all_reviews(){
+    	$("#reviews_all").css("height", "auto");
+        $("#show_all_rev_bg").css("display", "none");
+        $("#show_all_rev").css("display", "none");
+		}
+</script>
+{/literal}
+{literal}
+<script type="text/javascript">
 function open_pop_up(box) {
 	$("#fon_box").show();
 	$(box).show(500);
@@ -76,7 +85,7 @@ function close_pop_up_1clk(box) {
 					<a href="https://siteheart.com/webconsultation/121106?byhref=1" target="siteheart_sitewindow_121106" onclick="_gaq.push(['_trackEvent', 'button', 'ask']);o=window.open;o('https://siteheart.com/webconsultation/121106', 'siteheart_sitewindow_121106', 'width=550,height=400,top=30,left=30,resizable=yes'); return false;">
 					    <span></span><span class="text">Онлайн-консультация</span></a>
    </form>
-   <a style="cursor:pointer;" onclick="popupWin = window.open('/zvonok.php', 'contacts', 'location,width=400,height=300,top=0'); popupWin.focus();return false;"><span class="linkcall"></span><span class="text">Обратный звонок</span></a>
+   <a style="cursor:pointer;" onclick="popupWin = window.open('/zvonok.php', 'contacts', 'location,width=400,height=300,top=0'); popupWin.focus();return false;"><span class="linkcall"></span><span class="text">Вам перезвонить?</span></a>
  </div><!-- .grid_6 -->
       
 
@@ -105,7 +114,7 @@ function close_pop_up_1clk(box) {
 
   <div class="clear"></div>
   <!-- navigation breadcrumbs --> 
-{if isset($breadcrumbs)}       
+ {if isset($breadcrumbs)}       
 <div class="container_12" itemscope itemtype="http://schema.org/WebPage">
     <div class="grid_12">
         <div class="breadcrumbs">
@@ -176,7 +185,6 @@ function close_pop_up_1clk(box) {
          <div class="grid_12">
             <div id="copyright" style="float:left;width:100%;padding-top:10px;margin:20px 0px 20px 0px;border-top:1px #1386b3 solid;">
                 <span style="float:left;"><a href="{$wa_url}">© 2013 / Fonarik.ua  Интернет-магазин</a></span>
-                <span style="float:right;">&copy; разработка: <a href="http://code201.net">Code201.net</a></span>
             </div>  
          </div>  
 

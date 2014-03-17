@@ -3,7 +3,7 @@
 </div>
 <!-- general welcome text -->
 <div id="content" class="grid_9"> 
-	<span class="page_title">{$category.name}</span>      
+	<h1 class="page_title">{if !empty($category.params) && isset($category.params.h1)}{$category.params.h1}{else}{$category.name}{/if}</h1>
 	<!-- subcategories -->
 	<!-- {if $category.subcategories}
 			<div class="sub-categories">
@@ -150,7 +150,7 @@
 	      <p class="pagination_info"></p>
   {/if}
   <!-- description -->
-    {if $category.description}
+    {if $category.description && !waRequest::get(page) }
         <div id="category_description">{$category.description}</div>
     {/if}
     

@@ -335,7 +335,7 @@ class shopCurrencyModel extends waModel
         $sql = "UPDATE `shop_product` p
             JOIN `shop_product_skus` ps ON ps.product_id = p.id AND ps.id = p.sku_id
             JOIN `shop_currency` c ON c.code = p.currency
-            SET p.price = ps.price*c.rate
+            SET p.price = ps.price*c.rate, p.compare_price = ps.compare_price*c.rate
             $where";
         $this->exec($sql);
 

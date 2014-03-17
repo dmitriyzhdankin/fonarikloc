@@ -9,7 +9,7 @@
                 <div class="price">
                 <div class="vert">
                   <div class="price_new">{shop_currency($p.price, $p.currency)}</div>
-                  <div class="price_old"></div>
+                  <div class="price_old">{$p.compare_price}</div>
                 </div>
                 </div>
                  {if $wa->shop->settings('ignore_stock_count') || $p.count === null || $p.count > 0}

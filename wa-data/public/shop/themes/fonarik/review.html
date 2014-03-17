@@ -21,9 +21,9 @@
          {/if}
            <div class="price"> 
         {if empty($review.site)}
-            <strong><div class="autor" itemprop="author">{$review.author.name}</div></strong>
+             <strong><div class="autor" itemprop="author"><strong style="font-size: 18px;line-height: 20px;margin: 0;border-bottom: 1px dashed #ccc;">{$review.author.name}</strong></div></strong>
         {else}
-            <strong><div class="autor" itemprop="author">{$review.author.name}</div></strong>
+            <strong><div class="autor" itemprop="author"><strong style="font-size: 18px;line-height: 20px;margin: 0;border-bottom: 1px dashed #ccc;">{$review.author.name}</strong></div></strong>
         {/if}
         <strong><meta itemprop="datePublished" content="{$review.datetime|date_format:'Y-m-d'}"></strong>
         <span><time datetime="{$review.datetime|date_format:'Y-m-d'}">{$review.datetime|wa_datetime:"humandatetime"}</time></span>

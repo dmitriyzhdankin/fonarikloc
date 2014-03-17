@@ -1,15 +1,15 @@
    {foreach $products as $p}
 		     <div class="grid_3 product" itemscope itemtype ="http://schema.org/Product">
 			    <div class="prev">
-                <a href="{$p.frontend_url}" title="{$p.name}{if $p.summary} &mdash; {strip_tags($p.summary)}{/if}">
+                <a href="{$p.frontend_url}" title="{if $p.summary}{strip_tags($p.summary)}{/if}">
                 {$wa->shop->productImgHtml($p, '200x200', ['itemprop' => 'image', 'default' => "`$wa_theme_url`img/dummy200.png", 'alt' => $p.name])}
                     </a></div>
-              <h3 class="title">{$p.name}</h3>
+               <a href="{$p.frontend_url}" title="{if $p.summary}{strip_tags($p.summary)}{/if}"><span class="title">{$p.name}</span></a>
               <div class="cart" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
                 <div class="price">
                 <div class="vert">
                   <div class="price_new" itemprop="price">{shop_currency($p.price)}</div>
-                  <div class="price_old"></div>
+                  {if $p.compare_price > 0 }<div class="price_old" itemprop="price">{shop_currency($p.compare_price|ceil)}</div>{/if}
                 </div>
                 </div>
                  {if $wa->shop->settings('ignore_stock_count') || $p.count === null || $p.count > 0}
