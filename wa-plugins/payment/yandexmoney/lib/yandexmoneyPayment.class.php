@@ -8,6 +8,8 @@
  * @property-read string $shopPassword
  * @property-read string $ShopID
  * @property-read string $scid
+ * @property-read string $payment_mode
+ * @property-read array $paymentType
  */
 class yandexmoneyPayment extends waPayment implements waIPayment
 {
@@ -55,7 +57,7 @@ class yandexmoneyPayment extends waPayment implements waIPayment
         return 'RUB';
     }
 
-    public function payment($payment_form_data, $order_data, $transaction_type)
+    public function payment($payment_form_data, $order_data, $auto_submit = false)
     {
         if ($order_data['currency_id'] != 'RUB') {
             return array(
@@ -71,10 +73,44 @@ class yandexmoneyPayment extends waPayment implements waIPayment
             'orderNumber'    => $this->app_id.'_'.$this->merchant_id.'_'.$order_data['order_id'],
             'Sum'            => number_format($order_data['amount'], 2, '.', ''),
         );
+        $fields = array();
+        if ($this->payment_mode) {
+            switch ($this->payment_mode) {
+                case 'customer':
+                    $ways = self::settingsPaymentOptions();
+                    $options = array(
+                        'title'       => 'Способ оплаты',
+                        'description' => '',
+                        'options'     => array(),
+                    );
+
+
+                    foreach ($ways as $way => $name) {
+                        if (isset($this->paymentType[$way]) && !empty($this->paymentType[$way])) {
+                            $options['options'][$way] = $name;
+                        }
+                    }
+                    if (count($options['options']) == 1) {
+                        $hidden_fields['paymentType'] = key($options['options']);
+                    } elseif (count($options['options']) > 1) {
+                        $options['value'] = key($options['options']);
+                        $fields['paymentType'] = waHtmlControl::getControl(waHtmlControl::SELECT, 'paymentType', $options);
+                        $auto_submit = false;
+                    }
+                    break;
+                default:
+                    $hidden_fields['paymentType'] = $this->payment_mode;
+                    break;
+            }
+
+        }
         $view = wa()->getView();
 
         $view->assign('hidden_fields', $hidden_fields);
+        $view->assign('fields', $fields);
         $view->assign('form_url', $this->getEndpointUrl());
+
+        $view->assign('auto_submit', $auto_submit);
 
         return $view->fetch($this->path.'/templates/payment.html');
     }
@@ -83,6 +119,7 @@ class yandexmoneyPayment extends waPayment implements waIPayment
     {
         $this->request = $request;
         $pattern = '/^([a-z]+)_(.+)_(.+)$/';
+
         if (!empty($request['orderNumber']) && preg_match($pattern, $request['orderNumber'], $match)) {
             $this->app_id = $match[1];
             $this->merchant_id = $match[2];
@@ -95,7 +132,7 @@ class yandexmoneyPayment extends waPayment implements waIPayment
      *
      * @param array $request - get from gateway
      * @throws waPaymentException
-     * @return void
+     * @return mixed
      */
     protected function callbackHandler($request)
     {
@@ -125,6 +162,17 @@ class yandexmoneyPayment extends waPayment implements waIPayment
                 break;
 
             case self::OPERATION_AUTH_CAPTURE:
+                // exclude transactions duplicates
+                $tm = new waTransactionModel();
+                $fields = array(
+                    'native_id' => $transaction_data['native_id'],
+                    'plugin'    => $this->id,
+                    'type'      => waPayment::OPERATION_AUTH_CAPTURE,
+                );
+                if ($tm->getByFields($fields)) {
+                    throw new waPaymentException('already accepted', self::XML_SUCCESS);
+                }
+
                 $app_payment_method = self::CALLBACK_PAYMENT;
                 $transaction_data['state'] = self::STATE_CAPTURED;
                 break;
@@ -132,25 +180,9 @@ class yandexmoneyPayment extends waPayment implements waIPayment
                 throw new waPaymentException('unsupported payment operation', self::XML_TEMPORAL_PROBLEMS);
         }
 
-        if ($transaction_data['type'] == waPayment::OPERATION_AUTH_CAPTURE) { // exclude transactions duplicates
-            $tm = new waTransactionModel();
-            $fields = array(
-                'native_id' => $transaction_data['native_id'],
-                'plugin'    => $this->id,
-                'type'      => waPayment::OPERATION_AUTH_CAPTURE,
-            );
-            if ($tm->getByFields($fields)) {
-                throw new waPaymentException('already accepted', self::XML_SUCCESS);
-            }
-
-        }
-
         $transaction_data = $this->saveTransaction($transaction_data, $request);
 
         $result = $this->execAppCallback($app_payment_method, $transaction_data);
-
-        self::addTransactionData($transaction_data['id'], $result);
-
         return $this->getXMLResponse($request, $result['result'] ? self::XML_SUCCESS : self::XML_PAYMENT_REFUSED, $result['error']);
     }
 
@@ -170,7 +202,7 @@ class yandexmoneyPayment extends waPayment implements waIPayment
     private function getEndpointUrl()
     {
         if ($this->TESTMODE) {
-            return 'http://demomoney.yandex.ru/eshop.xml';
+            return 'https://demomoney.yandex.ru/eshop.xml';
         } else {
             return 'https://money.yandex.ru/eshop.xml';
         }
@@ -339,6 +371,16 @@ class yandexmoneyPayment extends waPayment implements waIPayment
             'header'   => array(
                 'Content-type' => ($this->version == '1.3') ? 'text/xml; charset=windows-1251;' : 'text/xml; charset=utf-8;',
             ),
+        );
+    }
+
+    public static function settingsPaymentOptions()
+    {
+        return array(
+            'PC' => 'платеж со счета в Яндекс.Деньгах',
+            'AC' => 'платеж с банковской карты',
+            'GP' => 'платеж по коду через терминал',
+            'MC' => 'оплата со счета мобильного телефона',
         );
     }
 }

@@ -22,7 +22,6 @@ class shopFrontendSearchAction extends shopFrontendAction
          * @event frontend_search
          * @return array[string]string $return[%plugin_id%] html output for search
          */
-       // echo "123321".serialize(wa()->event('frontend_search'));
         $this->view->assign('frontend_search', wa()->event('frontend_search'));
         $this->setThemeTemplate('search.html');
     }

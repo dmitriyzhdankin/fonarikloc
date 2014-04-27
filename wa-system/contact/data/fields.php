@@ -41,7 +41,8 @@ return array(
         'ext' => array(
             'work' => 'Work',
             'personal' => 'Personal',
-        )
+        ),
+        'top' => true
     )),
     new waContactDateField('birthday', 'Birthday', array('storage' => 'info')),
     new waContactTextField('about', 'Description', array('storage' => 'info')),
@@ -51,11 +52,8 @@ return array(
             'work' => 'Work',
             'mobile' => 'Mobile',
             'home' => 'Home',
-        )
-    )),
-	new waContactStringField('gorod', 'City', array(
-        'max_length' => 50, 'storage' => 'info', 'type' => 'NameSubfield',
-        'fconstructor' => 'fixed',
+        ),
+        'top' => true
     )),
     new waContactStringField('im', 'Instant messenger', array(
         'multi' => true,
@@ -72,6 +70,7 @@ return array(
                 'top' => new waContactIMTopFormatter(),
                 'js' => new waContactIMJSFormatter()
         ),
+        'top' => true
     )),
 
     new waContactAddressField('address', 'Address', array(

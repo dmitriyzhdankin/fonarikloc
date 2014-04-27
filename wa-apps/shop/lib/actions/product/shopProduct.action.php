@@ -1,4 +1,5 @@
 <?php
+
 class shopProductAction extends waViewAction
 {
     /**
@@ -66,6 +67,9 @@ class shopProductAction extends waViewAction
 
             $product_services_model = new shopProductServicesModel();
             $counters['services'] = $product_services_model->countServices($product->id);
+            
+            $product_stocks_log_model = new shopProductStocksLogModel();
+            $counters['stocks_log'] = $product_stocks_log_model->countByField('product_id', $product->id);
 
             $this->view->assign('edit_rights', $product->checkRights());
         } else {
@@ -116,35 +120,52 @@ class shopProductAction extends waViewAction
             'taxes'                => $taxes_mode->getAll(),
         ));
 
-        // %product_url% - stuff used only when creating new product
-        $stuff = $product->url ? $product->url : '%product_url%';
-        $frontend_url = null;
-        $fontend_base_url = null;
+        $category_model = new shopCategoryModel();
+        $categories = $category_model->getFullTree('id, name, depth, url, full_url', true);
+        $frontend_urls = array();
 
-        if ($product->id) {
+        if (intval($product->id)) {
             $routing = wa()->getRouting();
             $domain_routes = $routing->getByApp($this->getAppId());
             foreach ($domain_routes as $domain => $routes) {
                 foreach ($routes as $r) {
+                    if (!empty($r['private'])) {
+                        continue;
+                    }
                     if (empty($r['type_id']) || (in_array($product->type_id, (array) $r['type_id']))) {
                         $routing->setRoute($r, $domain);
-                        $frontend_url = $routing->getUrl('/frontend/product', array('product_url' => $stuff), true);
-                        break;
+                        $params = array('product_url' => $product->url);
+                        if ($product->category_id && isset($categories[$product->category_id])) {
+                            if (!empty($r['url_type']) && $r['url_type'] == 1) {
+                                $params['category_url'] = $categories[$product->category_id]['url'];
+                            } else {
+                                $params['category_url'] = $categories[$product->category_id]['full_url'];
+                            }
+                        }
+                        $frontend_url = $routing->getUrl('/frontend/product', $params, true);
+                        $frontend_urls[] = array(
+                            'url' => $frontend_url
+                        );
                     }
                 }
             }
+        } else {
+            $frontend_urls[] = array(
+                'url' => wa()->getRouteUrl('/frontend/product', array('product_url' => '%product_url%'), true),
+            );
         }
-        if (empty($frontend_url) && !$product->id) {
-            $frontend_url = wa()->getRouteUrl('/frontend/product', array('product_url' => $stuff), true);
+        
+        $stuff = intval($product->id) ? $product->url : '%product_url%';
+        foreach ($frontend_urls as &$frontend_url) {
+            $pos = strrpos($frontend_url['url'], $stuff);
+            $frontend_url['base'] = $pos !== false ? rtrim(substr($frontend_url['url'], 0, $pos), '/').'/' : $frontend_url['url'];
         }
-        if (!empty($frontend_url)) {
-            $pos = strrpos($frontend_url, $stuff);
-            $fontend_base_url = $pos !== false ? rtrim(substr($frontend_url, 0, $pos), '/').'/' : $frontend_url;
-        }
+        unset($frontend_url);
+        
+        $product_model = new shopProductModel();
+        $this->view->assign('storefront_map', $product_model->getStorefrontMap($product->id));
 
         /**
-         * !!! FIXME: update this description?.. E.g. include title_suffix. Or remove it...
-         *
          * Backend product profile page
          * UI hook allow extends product profile page
          * @event backend_product
@@ -156,8 +177,12 @@ class shopProductAction extends waViewAction
          */
         $this->view->assign('backend_product', wa()->event('backend_product', $product));
 
-        $category_model = new shopCategoryModel();
-        $this->view->assign('categories', $category_model->getFullTree('id, name, depth', true));
+        /**
+         * @event backend_product_edit
+         */
+        $this->view->assign('backend_product_edit', wa()->event('backend_product_edit', $product));
+
+        $this->view->assign('categories', $categories);
 
         $this->view->assign('counters', $counters);
         $this->view->assign('product', $product);
@@ -166,8 +191,10 @@ class shopProductAction extends waViewAction
         $this->view->assign('review_allowed', true);
         $this->view->assign('sidebar_counters', $sidebar_counters);
         $this->view->assign('lang', substr(wa()->getLocale(), 0, 2));
-        $this->view->assign('frontend_url', $frontend_url);
-        $this->view->assign('frontend_base_url', $fontend_base_url);
+        $this->view->assign('frontend_urls', $frontend_urls);
+        
+        $tag_model = new shopTagModel();
+        $this->view->assign('popular_tags', $tag_model->popularTags());
 
         // Selectable features
         $selectable_features = $this->getSelectableFeatures($product);
@@ -183,6 +210,8 @@ class shopProductAction extends waViewAction
 
         #load product types
         $this->view->assign('product_types', $product_types);
+        
+        $this->view->assign('sidebar_width', $config->getSidebarWidth());
     }
 
     /**
@@ -222,8 +251,9 @@ class shopProductAction extends waViewAction
     protected function assignReportsData($product)
     {
         $order_model = new shopOrderModel();
-        $sales_total = $order_model->getTotalSalesByProduct($product['id']);
-        $this->view->assign('sales', $sales_total['total']);
+        $sales_total = $order_model->getTotalSalesByProduct($product['id'], $product['currency']);
+        $this->view->assign('sales', $sales_total);
+        
         $profit = $sales_total['total'];
 
         $rows = $order_model->getSalesByProduct($product['id']);
@@ -239,20 +269,20 @@ class shopProductAction extends waViewAction
 
         if (count($product['skus']) > 1) {
             $sku_sales_data = array();
-            $rows = $order_model->getTotalSkuSalesByProduct($product['id']);
+            $rows = $order_model->getTotalSkuSalesByProduct($product['id'], $product['currency']);
             foreach ($rows as $sku_id => $v) {
                 $sku_sales_data[] = array($product['skus'][$sku_id]['name'], (float) $v['total']);
-                if (!(double) $product['skus'][$sku_id]['purchase_price']) {
+                if (!(double)$v['purchase']) {
                     $profit = false;
                 } elseif ($profit) {
-                    $profit -= $v['quantity'] * $product['skus'][$sku_id]['purchase_price'];
+                    $profit -= $v['purchase'];
                 }
             }
             $this->view->assign('sku_plot_data', array($sku_sales_data));
         } else {
             $sku_id = $product['sku_id'];
-            if ($profit && (double) $product['skus'][$sku_id]['purchase_price']) {
-                $profit -= $sales_total['quantity'] * $product['skus'][$sku_id]['purchase_price'];
+            if ((double)$sales_total['purchase']) {
+                $profit -= $sales_total['purchase'];
             } else {
                 $profit = false;
             }
@@ -261,6 +291,24 @@ class shopProductAction extends waViewAction
         if ($profit) {
             $this->view->assign('profit', $profit);
         }
+        
+        $runout = array();
+        $sales_rate = 0;
+        if ($sales_total['quantity'] >= 3) { // < 3 means not enough data for proper statistic
+            $sales_rate = $sales_total['quantity'] / 30;
+            $runout = $product->getRunout($sales_rate);
+        }
+        $this->view->assign('runout', $runout);
+        $this->view->assign('sales_rate', $sales_rate);
+        
+        $stocks_log_model = new shopProductStocksLogModel();
+        $stocks_log = $stocks_log_model->getList('*,stock_name,sku_name,product_name', array(
+            'where' => array('product_id' => $product->id),
+            'limit' => 5,
+            'order' => 'datetime DESC'
+        ));
+        $this->view->assign('stocks_log', $stocks_log);
+        
     }
 
     protected function getCurrencies()

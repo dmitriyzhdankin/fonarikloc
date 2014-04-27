@@ -1,18 +1,21 @@
-    <div class="grid_12" style="float:left;height:300px;overflow:hidden;margin-top:-20px;">
-        <div class="slidprev"><span>Назад</span></div>
-        <div class="slidnext"><span>Вперёд</span></div>
-        <div id="slider">
-        {$wa_banner}
-        </div>
-        <div id="myController">
-         {$wa_controller}
-        </div>
+    <div class="grid_12">
+        {$wa->dislider->showSlider('1')} 
     </div><!-- .grid_12 -->
 
   <div class="clear"></div>
 
       <div id="top_button">
-         {$wa_small_banner}
+         {$slires = $wa->dislider->getSlides('2')}
+         {if $slires}
+            {foreach $slires as $slide}
+                <div class="grid_4" style="width:320px;margin:0px 0px 0px 12px;">
+                    <a href="{$slide['link']}" title="{$slide['title']}" class="button_block best_price">
+                        <img src="{$slide['url']}" alt="{$slide['title']}" width="320" height="101"/>
+                    </a>
+                </div>
+            {/foreach}
+         {/if}          
+         
         <div class="clear"></div>
       </div><!-- #top_button -->
 

@@ -5,75 +5,36 @@ class shopFrontendCategoryAction extends shopFrontendAction
     public function execute()
     {
         $category_model = new shopCategoryModel();
+        $url_field = waRequest::param('url_type') == 1 ? 'url' : 'full_url';
+
         if (waRequest::param('category_id')) {
             $category = $category_model->getById(waRequest::param('category_id'));
-            
-        } else {
-            //$category = $category_model->getByField(waRequest::param('url_type') == 1 ? 'url' : 'full_url', waRequest::param('category_url'));
-            $category_url_arr=explode("/",waRequest::param('category_url'));
-            $cat_url="";
-            foreach($category_url_arr AS $arr)
-            {
-                if((substr_count($arr,"ff-")==0) AND (substr_count($arr,"price_min-")==0) AND (substr_count($arr,"price_max-")==0))
-                {
-                    $cat_url .= $arr."/";
-                }elseif(substr_count($arr,"ff-")!=0)
-                {
-                    $f_url=$arr;
-                    $f_url=str_replace("ff-","",$f_url);
-                    
-                    
-                    $fexpl=explode("-",$f_url);
-                    
-                    
-                    foreach($fexpl AS $expl_arr)
-                    {                    
-                        $f_url_arr=explode("_",$expl_arr);
-                        $k[]=$f_url_arr[1];
-                        $_GET[$f_url_arr[0]]=$k;    
-                    }
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                }elseif(substr_count($arr,"price_min-")!=0)
-                {
-                    $f_url=$arr;
-                    $f_url=str_replace("price_min-","",$f_url);                                        
-                    $_GET["price_min"]=$f_url;
-                }elseif(substr_count($arr,"price_max-")!=0)
-                {
-                    $f_url=$arr;
-                    $f_url=str_replace("price_max-","",$f_url);                                        
-                    $_GET["price_max"]=$f_url;
+            if ($category) {
+                $category_url = wa()->getRouteUrl('/frontend/category', array('category_url' => $category[$url_field]));
+                if (urldecode(wa()->getConfig()->getRequestUrl(false, true)) !== $category_url) {
+                    $q = waRequest::server('QUERY_STRING');
+                    $this->redirect($category_url.($q ? '?'.$q : ''), 301);
                 }
-                
-                
-                
-                
             }
-            $cat_url = str_replace("///","",$cat_url."//");
-            
-            //$category = $category_model->getByField(waRequest::param('url_type') == 1 ? 'url' : 'full_url', waRequest::param('category_url'));
-              $category = $category_model->getByField(waRequest::param('url_type') == 1 ? 'url' : 'full_url', $cat_url);
-              $this->view->assign('cat_url', $cat_url);
-           // echo "=".$cat_url."=<br>";
-            //echo "=".waRequest::param('category_url')."=<br>";
-            
-            //$k[]=129;
-            //$_GET['Tip']=$k;
-        //    echo serialize($_GET);
-            //echo waRequest::param('category_url')."===";
+        } else {
+            $category = $category_model->getByField($url_field, waRequest::param('category_url'));
+            if ($category && $category[$url_field] !== urldecode(waRequest::param('category_url'))) {
+                $q = waRequest::server('QUERY_STRING');
+                $this->redirect(wa()->getRouteUrl('/frontend/category', array('category_url' => $category[$url_field])).($q ? '?'.$q : ''), 301);
+            }
         }
-        
-        
-        $route = wa()->getRouting()->getDomain(null, true).'/'.wa()->getRouting()->getRoute('url');
-        if (!$category || ($category['route'] && $category['route'] != $route)) {
+        $route = wa()->getRouting()->getDomain(null, true) . '/' . wa()->getRouting()->getRoute('url');
+        if ($category) {
+            $category_routes_model = new shopCategoryRoutesModel();
+            $routes = $category_routes_model->getRoutes($category['id']);
+        }
+        if (!$category || ($routes && !in_array($route, $routes))) {
             throw new waException('Category not found', 404);
         }
+
+
+
+        $category['subcategories'] = $category_model->getSubcategories($category, $route);
 
         if ($category['filter']) {
             $filter_ids = explode(',', $category['filter']);
@@ -82,55 +43,69 @@ class shopFrontendCategoryAction extends shopFrontendAction
             if ($features) {
                 $features = $feature_model->getValues($features);
             }
+            // if static category
+            if (!$category['type']) {
+                $product_features_model = new shopProductFeaturesModel();
+                if ($category['include_sub_categories']) {
+                    $cids = $category_model->descendants($category, true)->select('id')->where('type = '.shopCategoryModel::TYPE_STATIC)->fetchAll(null, true);
+                    $category_values = $product_features_model->getValuesByCategory($cids);
+                } else {
+                    $category_values = $product_features_model->getValuesByCategory($category['id']);
+                }
+            }
+
             $filters = array();
             foreach ($filter_ids as $fid) {
                 if ($fid == 'price') {
                     $filters['price'] = true;
                 } elseif (isset($features[$fid])) {
-                    $filters[$fid] = $features[$fid];
+                    if ($category['type'] || isset($category_values[$fid])) {
+                        $filters[$fid] = $features[$fid];
+                        if (false && ($filters[$fid]['type'] == shopFeatureModel::TYPE_BOOLEAN)) {
+                            unset($filters[$fid]['values'][0]);
+                        } else {
+                            if (isset($category_values[$fid])) {
+                                foreach ($filters[$fid]['values'] as $v_id => $v) {
+                                    if (!in_array($v_id, $category_values[$fid])) {
+                                        unset($filters[$fid]['values'][$v_id]);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
             $this->view->assign('filters', $filters);
         }
-
-        $category['subcategories'] = $category_model->getSubcategories($category, true);
         $category_url = wa()->getRouteUrl('shop/frontend/category', array('category_url' => '%CATEGORY_URL%'));
         foreach ($category['subcategories'] as &$sc) {
             $sc['url'] = str_replace('%CATEGORY_URL%', waRequest::param('url_type') == 1 ? $sc['url'] : $sc['full_url'], $category_url);
         }
         unset($sc);
 
-      //  if ($category['parent_id']) {
-            
+        $this->addCanonical();
+
+        $root_category_id = $category['id'];
+
+        if ($category['parent_id']) {
             $breadcrumbs = array();
             $path = array_reverse($category_model->getPath($category['id']));
-           // echo serialize($category_model->getPath($category['id']))."-";
-            if($path){
+            $root_category = reset($path);
+            $root_category_id = $root_category['id'];
             foreach ($path as $row) {
-             
                 $breadcrumbs[] = array(
                     'url' => wa()->getRouteUrl('/frontend/category', array('category_url' => waRequest::param('url_type') == 1 ? $row['url'] : $row['full_url'])),
                     'name' => $row['name']
                 );
             }
+            if ($breadcrumbs) {
+                $this->view->assign('breadcrumbs', $breadcrumbs);
             }
-            
-            {
-               $breadcrumbs[] = array(
-                    'url' => '/'.$category['full_url'],
-                    'name' => $category['name']
-                );  
-            }
-            
-            
-            
-            
-            if ($breadcrumbs && $this->layout) {
-                $this->layout->assign('breadcrumbs', $breadcrumbs);
-              //  echo      serialize($breadcrumbs);
-            }
-    //    }
-             
+        }
+
+        $this->view->assign('root_category_id', $root_category_id);
+
         if ($category['type'] == shopCategoryModel::TYPE_DYNAMIC && !$category['sort_products']) {
             $category['sort_products'] = 'create_datetime DESC';
         }
@@ -139,7 +114,7 @@ class shopFrontendCategoryAction extends shopFrontendAction
         $category['params'] = $category_params_model->get($category['id']);
 
         if ($this->getConfig()->getOption('can_use_smarty') && $category['description']) {
-            $category['description'] = wa()->getView()->fetch('string:'.$category['description']);
+            $category['description'] = wa()->getView()->fetch('string:' . $category['description']);
         }
 
 
@@ -152,14 +127,13 @@ class shopFrontendCategoryAction extends shopFrontendAction
             } else {
                 $order = 'asc';
             }
-            $_GET['sort'] = $sort[0];
-            $_GET['order'] = $order;
+            //$_GET['order'] = $order;
+            $this->view->assign('active_sort', $sort[0] == 'count' ? 'stock' : $sort[0]);
         } elseif (!$category['sort_products'] && !waRequest::get('sort')) {
             $this->view->assign('active_sort', '');
         }
 
-
-        $this->setCollection(new shopProductsCollection('category/'.$category['id']));
+        $this->setCollection(new shopProductsCollection('category/' . $category['id']));
 
         $title = $category['meta_title'] ? $category['meta_title'] : $category['name'];
         wa()->getResponse()->setTitle($title);
@@ -170,7 +144,7 @@ class shopFrontendCategoryAction extends shopFrontendAction
          * @event frontend_category
          * @return array[string]string $return[%plugin_id%] html output for category
          */
-        $this->view->assign('frontend_category', wa()->event('frontend_category'));
+        $this->view->assign('frontend_category', wa()->event('frontend_category', $category));
         $this->setThemeTemplate('category.html');
     }
 }

@@ -4,6 +4,7 @@ class shopDiscounts
 {
     /**
      * @param array $order items, total
+     * @param bool $apply
      * @return float total discount value in currency of the order
      */
     public static function calculate(&$order, $apply = false)
@@ -23,8 +24,12 @@ class shopDiscounts
 
         // Discount by order total applicable?
         if (self::isEnabled('order_total')) {
+            $crm = new shopCurrencyModel();
             $dbsm = new shopDiscountBySumModel();
-            $applicable_discounts[] = max(0.0, min(100.0, (float) $dbsm->getDiscount('order_total', $order['total']))) * $order['total'] / 100.0;
+
+            // Order total in default currency
+            $order_total = (float) $crm->convert($order['total'], wa()->getConfig()->getCurrency(false), wa()->getConfig()->getCurrency());
+            $applicable_discounts[] = max(0.0, min(100.0, (float) $dbsm->getDiscount('order_total', $order_total))) * $order['total'] / 100.0;
         }
 
         // Discount by customer total spent applicable?
@@ -32,7 +37,19 @@ class shopDiscounts
             $applicable_discounts[] = self::byCustomerTotal($order, $contact, $apply);
         }
 
-        // !!! TODO: Plugin hook for discounts
+        /**
+         * @event order_calculate_discount
+         * @param array $params
+         * @param array[string] $params['order'] order info array('total' => '', 'items' => array(...))
+         * @param array[string] $params['contact'] contact info
+         * @param array[string] $params['apply'] calculate or apply discount
+         * @return float discount
+         */
+        $event_params = array('order' => &$order, 'contact' => $contact, 'apply' => $apply);
+        $plugins_discounts = wa()->event('order_calculate_discount', $event_params);
+        foreach ($plugins_discounts as $plugin_discount) {
+            $applicable_discounts[] = $plugin_discount;
+        }
 
         // Select max discount or sum depending on global setting.
         $discount = 0.0;
@@ -117,12 +134,11 @@ class shopDiscounts
                 break;
             default:
                 // Flat value in currency
-                $coupon['value'] = max(0.0, (float) $coupon['value']);
-                if (wa()->getConfig()->getCurrency(false) == $coupon['type']) {
-                    return $coupon['value'];
+                $result = max(0.0, (float) $coupon['value']);
+                if (wa()->getConfig()->getCurrency(false) != $coupon['type']) {
+                    $crm = new shopCurrencyModel();
+                    $result = (float) $crm->convert($result, $coupon['type'], wa()->getConfig()->getCurrency(false));
                 }
-                $crm = new shopCurrencyModel();
-                $result = (float) $crm->convert($coupon['value'], $coupon['type'], wa()->getConfig()->getCurrency(false));
                 break;
         }
 

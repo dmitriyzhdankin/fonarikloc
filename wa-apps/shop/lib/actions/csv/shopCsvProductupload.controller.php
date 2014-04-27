@@ -2,11 +2,6 @@
 
 class shopCsvProductuploadController extends shopUploadController
 {
-    /**
-     * @var shopProductImagesModel
-     */
-    private $model;
-
     private function options()
     {
         $translates = array();
@@ -15,7 +10,7 @@ class shopCsvProductuploadController extends shopUploadController
         $translates['sku'] = _w('SKU fields');
 
         $options = array();
-        $fileds = array(
+        $fields = array(
             'product' => array(
                 'name'             => _w('Product name'),
                 'summary'          => _w('Summary'),
@@ -23,7 +18,9 @@ class shopCsvProductuploadController extends shopUploadController
                 'meta_keywords'    => _w('META Keyword'),
                 'meta_description' => _w('META Description'),
                 'description'      => _w('Description'),
-                'sort'             => _w('Product sort order'),
+                'badge'            => _w('Badge'),
+                'status'           => _w('Status'),
+                //'sort'             => _w('Product sort order'),
                 'tags'             => _w('Tags'),
                 'tax_name'         => _w('Taxable'),
 
@@ -47,11 +44,11 @@ class shopCsvProductuploadController extends shopUploadController
         if ($stocks = $stock_model->getAll('id')) {
 
             foreach ($stocks as $stock_id => $stock) {
-                $fileds['sku']['skus:-1:stock:'.$stock_id] = _w('In stock').' @'.$stock['name'];
+                $fields['sku']['skus:-1:stock:'.$stock_id] = _w('In stock').' @'.$stock['name'];
             }
         }
 
-        foreach ($fileds as $group => $group_fields) {
+        foreach ($fields as $group => $group_fields) {
             foreach ($group_fields as $id => $name) {
                 $options[] = array(
                     'group' => array(
@@ -64,18 +61,67 @@ class shopCsvProductuploadController extends shopUploadController
             }
         }
 
-        $features_model = new shopFeatureModel();
-        $features = $features_model->getAll();
         $group = 'feature';
-        foreach ($features as $feature) {
+        $feature_model = new shopFeatureModel();
+
+        //TODO use ajax features mapping
+        $limit = null;
+
+        if (!$limit || ($feature_model->countByField(array('parent_id' => null)) < $limit)) {
+            $features = $feature_model->select('`code`, `name`,`type`')->fetchAll('code', true);
+
+            foreach ($features as $code => $feature) {
+                if (!preg_match('/\.\d$/', $code) && ($feature['type'] != shopFeatureModel::TYPE_DIVIDER)) {
+                    $options[] = array(
+                        'group'       => array(
+                            'title' => ifset($translates[$group]),
+                            'class' => $group,
+                        ),
+                        'value'       => sprintf('features:%s', $code),
+                        'title'       => $feature['name'],
+                        'description' => $code,
+                    );
+                }
+            }
+        } else {
+            //use $map for preload some features
+            $features = array();
+            $feature_options = array();
+            array_push($feature_options, array(
+                'title' => '—',
+                'value' => '',
+            ));
+
+            if ($features = array_unique($features)) {
+                foreach ($features as $feature) {
+                    $feature_options[] = array(
+                        'title' => $feature['name'],
+                        'value' => sprintf('features:%s', $feature['code']),
+                    );
+                }
+            }
+
+            $feature_options[] = array(
+                'value' => 'features:%s',
+                'title' => _w('Select feature'),
+            );
+
+            unset($option);
+
             $options[] = array(
                 'group'       => array(
                     'title' => ifset($translates[$group]),
                     'class' => $group,
                 ),
-                'value'       => sprintf('features:%s', $feature['code']),
-                'title'       => $feature['name'],
-                'description' => $feature['code'],
+                'value'       => 'features:%s',
+                'title'       => _w('feature'),
+                'description' => '',
+                'control'     => array(
+                    'control' => waHtmlControl::SELECT,
+                    'params'  => array(
+                        'options' => $feature_options,
+                    ),
+                ),
             );
         }
 
@@ -92,13 +138,21 @@ class shopCsvProductuploadController extends shopUploadController
             if (($ext = pathinfo($original_name, PATHINFO_EXTENSION)) && preg_match('/^\w+$/', $ext)) {
                 $name .= '.'.$ext;
             }
-            $res = $file->moveTo($name);
+            $file->moveTo($name);
         } else {
             throw new waException(_w('Error file upload'));
         }
 
-        $f = new shopCsvReader($name, waRequest::post('delimeter'), waRequest::post('encoding'));
+        $f = new shopCsvReader($name, waRequest::post('delimiter'), waRequest::post('encoding'));
 
+
+        $profile_helper = new shopImportexportHelper('csv:product:import');
+        $profile = $profile_helper->getConfig();
+        $profile['config'] += array(
+            'encoding'  => 'UTF-8',
+            'delimiter' => ';',
+            'map'       => array(),
+        );
         $params = array();
         $params['title'] = _w('CSV column map');
         $params['id'] = 'csvproducts';

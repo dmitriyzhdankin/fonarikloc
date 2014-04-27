@@ -306,7 +306,6 @@ class Swift_Mime_Headers_MailboxHeader extends Swift_Mime_Headers_AbstractHeader
      */
     private function _assertValidAddress($address)
     {
-        
         if (!preg_match('/^' . $this->getGrammar()->getDefinition('addr-spec') . '$/D',
             $address))
         {

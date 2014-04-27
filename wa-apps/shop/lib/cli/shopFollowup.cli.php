@@ -21,7 +21,7 @@ class shopFollowupCli extends waCliController
         $empty_customer = $cm->getEmptyRow();
         $general = wa('shop')->getConfig()->getGeneralSettings();
 
-        foreach($fm->getAll() as $f) {
+        foreach($fm->getAllEnabled() as $f) {
             $between_from = date('Y-m-d', strtotime($f['last_cron_time']) - 24*3600);
             $between_to = date('Y-m-d 23:59:59', time() - $f['delay'] - 10*3600);
             $orders = $om->where('paid_date >= ? AND paid_date < ?', $between_from, $between_to)->fetchAll('id');
@@ -39,6 +39,7 @@ class shopFollowupCli extends waCliController
                 }
                 $customers = $cm->getById($cids);
 
+                $sent_count = 0;
                 foreach($orders as $o) {
                     try {
                         // Is there a recipient in the first place?
@@ -51,7 +52,7 @@ class shopFollowupCli extends waCliController
 
                         // Check that this is the first order of this customer
                         if ($f['first_order_only']) {
-                            $first_order_id = $om->select('MIN(id)')->where('contact_id=? AND paid_date IS NOT NULL', $o['contact_id']);
+                            $first_order_id = $om->select('MIN(id)')->where('contact_id=? AND paid_date IS NOT NULL', $o['contact_id'])->fetchField();
                             if ($first_order_id != $o['id']) {
                                 if (waSystemConfig::isDebug()) {
                                     waLog::log("Skipping follow-up #{$f['id']} for order #{$o['id']}: not the first order of a customer.");
@@ -61,6 +62,15 @@ class shopFollowupCli extends waCliController
                         }
 
                         $o['params'] = ifset($params[$o['id']], array());
+
+                        $source = 'backend';
+                        if (isset($o['params']['storefront'])) {
+                            $source = $o['params']['storefront'].'*';
+                        }
+
+                        if ($f['source'] && $f['source'] != $source) {
+                            continue;
+                        }
 
                         // Make sure we have not send follow-up for this order yet
                         if (isset($o['params'][$f_param_key])) {
@@ -85,6 +95,7 @@ class shopFollowupCli extends waCliController
                         $to = array($email => $contact->getName());
 
                         if (self::sendOne($f, $o, $customer, $contact, $to, $view, $general)) {
+                            $sent_count++;
                             // Write to order log
                             $olm->add(array(
                                 'order_id' => $o['id'],
@@ -107,6 +118,17 @@ class shopFollowupCli extends waCliController
                         waLog::log("Unable to send follow-up #{$f['id']} for order #{$o['id']}:\n".$e);
                     }
                 }
+
+                /**
+                 * Notify plugins about sending followup
+                 * @event followup_send
+                 * @param array[string]int $params['sent_count'] number of emails successfully sent
+                 * @param array[string]int $params['id'] followup_id
+                 * @return void
+                 */
+                $event_params = $f;
+                $event_params['sent_count'] = $sent_count;
+                wa()->event('followup_send', $event_params);
             }
             $fm->updateById($f['id'], array(
                 'last_cron_time' => $between_to,
@@ -130,7 +152,7 @@ class shopFollowupCli extends waCliController
 
         $items_model = new shopOrderItemsModel();
         $o['items'] = $items_model->getItems($o['id']);
-        foreach ($data['order']['items'] as &$i) {
+        foreach ($o['items'] as &$i) {
             if (!empty($i['file_name'])) {
                 $i['download_link'] = wa()->getRouteUrl('/frontend/myOrderDownload',
                     array('id' => $o['id'], 'code' => $o['params']['auth_code'], 'item' => $i['id']), true
@@ -159,10 +181,15 @@ class shopFollowupCli extends waCliController
         $subject = $view->fetch('string:'.$f['subject']);
         $body = $view->fetch('string:'.$f['body']);
 
+        $from = $general['email'];
+        if ($f['from']) {
+            $from = $f['from'];
+        }
+
         // Send the message
         $message = new waMailMessage($subject, $body);
         $message->setTo($to);
-        $message->setFrom($general['email'], $general['name']);
+        $message->setFrom($from, $general['name']);
 
         return $message->send();
     }

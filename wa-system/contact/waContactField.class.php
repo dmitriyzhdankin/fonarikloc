@@ -98,8 +98,8 @@ abstract class waContactField
             'name' => $this->getName(),
             'multi' => $this->isMulti(),
             'type' => $this->getType(),
-            'unique' => $this->getParameter('unique'),
-            'required' => $this->getParameter('required'),
+            'unique' => $this->isUnique(),
+            'required' => $this->isRequired(),
         );
         if ($this->isMulti() && isset($this->options['ext'])) {
             $info['ext'] = $this->options['ext'];
@@ -540,7 +540,9 @@ abstract class waContactField
                         $data = $result;
                     }
                 } else {
-                    $data = htmlspecialchars(is_array($data) ? $data['value'] : $data);
+                    if (!is_array($data) || isset($data['value'])) {
+                        $data = htmlspecialchars(is_array($data) ? $data['value'] : $data);
+                    }
                 }
                 continue;
             }
@@ -655,10 +657,20 @@ abstract class waContactField
                 $suffix .= ']';
             }
         }
+
         if (isset($params['multi_index'])) {
-            $suffix = ']['.$params['multi_index'].$suffix;
+            if (isset($params['parent'])) {
+                // For composite multi-fields multi_index goes before field id:
+                // namespace[parent_name][i][field_id]
+                $prefix .= $params['multi_index'].'][';
+            } else {
+                // For non-composite multi-fields multi_index goes after field id:
+                // namespace[field_id][i]
+                $suffix = ']['.$params['multi_index'].$suffix;
+            }
         }
         $name = isset($params['id']) ? $params['id'] : $this->getId();
+
         return $prefix.$name.$suffix;
     }
 
@@ -748,6 +760,10 @@ abstract class waContactField
 
         // Non-multi field
         return $this->getHtmlOneWithErrors(ifempty($params['validation_errors']), $params, $attrs);
+    }
+
+    public function prepareVarExport()
+    {
     }
 
     public static function __set_state($state)

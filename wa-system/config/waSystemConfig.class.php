@@ -116,7 +116,7 @@ class waSystemConfig
         return isset(self::$system_options[$name]) ? self::$system_options[$name] : null;
     }
 
-    protected function getOption($name)
+    protected function getOption($name = null)
     {
         return $this->getSystemOption($name);
     }
@@ -252,7 +252,7 @@ class waSystemConfig
         }
     }
 
-    public function setPath($root_path)
+    protected function setPath($root_path)
     {
         $this->root_path = $root_path;
         waConfig::add(array(
@@ -290,15 +290,8 @@ class waSystemConfig
 
 
     public function getConfigFile($file, $default = array())
-    {                  
-        
-        $path = $this->getPath('config', $file);     
-        
-        
-        
-        
-        
-
+    {
+        $path = $this->getPath('config', $file);
         if (file_exists($path)) {
             return include($path);
         } else {

@@ -32,23 +32,30 @@ class shopFrontendCheckoutAction extends waViewAction
             }
             $order_model = new shopOrderModel();
             $order = $order_model->getById($order_id);
+            if ($order) {
+                $order['_id'] = $order['id'];
+            }
             if (!$payment_success) {
                 $order_params_model = new shopOrderParamsModel();
                 $order['params'] = $order_params_model->get($order_id);
+                $order_items_model = new shopOrderItemsModel();
+                $order['items'] = $order_items_model->getByField('order_id', $order_id, true);
                 $payment = '';
                 if (!empty($order['params']['payment_id'])) {
                     try {
+                        /**
+                         * @var waPayment $plugin
+                         */
                         $plugin = shopPayment::getPlugin(null, $order['params']['payment_id']);
-                        $payment = $plugin->payment(waRequest::post(), shopPayment::getOrderData($order, $plugin), null);
+                        $payment = $plugin->payment(waRequest::post(), shopPayment::getOrderData($order, $plugin), true);
                     } catch (waException $ex) {
                         $payment = $ex->getMessage();
                     }
                 }
                 $order['id'] = shopHelper::encodeOrderId($order_id);
-                $order_items_model = new shopOrderItemsModel();
-                $order['items'] = $order_items_model->getByField('order_id', $order_id, true);
-
                 $this->getResponse()->addGoogleAnalytics($this->getGoogleAnalytics($order));
+            } else {
+                $order['id'] = shopHelper::encodeOrderId($order_id);
             }
             $this->view->assign('order', $order);
             if (isset($payment)) {
@@ -56,7 +63,7 @@ class shopFrontendCheckoutAction extends waViewAction
             }
         } else {
             $cart = new shopCart();
-            if (!$cart->count()) {
+            if (!$cart->count() && $current_step != 'error') {
                 $current_step = 'error';
                 $this->view->assign('error', _w('Your shopping cart is empty. Please add some products to cart, and then proceed to checkout.'));
             }
@@ -97,6 +104,13 @@ class shopFrontendCheckoutAction extends waViewAction
         }
         $this->getResponse()->setTitle($title);
         $this->view->assign('checkout_current_step', $current_step);
+
+        /**
+         * @event frontend_checkout
+         * @return array[string]string $return[%plugin_id%] html output
+         */
+        $event_params = array('step' => $current_step);
+        $this->view->assign('frontend_checkout', wa()->event('frontend_checkout', $event_params));
 
         if (waRequest::isXMLHttpRequest()) {
             $this->setThemeTemplate('checkout.'.$current_step.'.html');
@@ -140,6 +154,7 @@ class shopFrontendCheckoutAction extends waViewAction
           ]);\n";
         }
 
+        $result .= "_gaq.push(['_set', 'currencyCode', '".$this->getConfig()->getCurrency(true)."']);\n";
         $result .= "_gaq.push(['_trackTrans']);\n";
 
         return $result;
@@ -173,23 +188,19 @@ class shopFrontendCheckoutAction extends waViewAction
         }
         unset($item);
 
-
-		$pitems = $items;
+        // Round price
+	$pitems = $items;
         $config = wa('shop')->getConfig();
         $primary = $config->getCurrency(true);
         $currency = $config->getCurrency(false);
-	
-		foreach($pitems as $ikey => $pitem){
-			$newprice = $pitem['price'];
-			$currencies = wa('shop')->getConfig()->getCurrencies(array($pitem['currency'], $currency));
-			$items[$ikey]['price'] = ceil($newprice * $currencies[$pitem['currency']]['rate']);
-			$items[$ikey]['currency'] = $currency;
-			$pnewprice = ceil($pitem['product']['price']);			
-			$items[$ikey]['product']['price'] = $pnewprice;
-			
-			
-		}
-		
+        foreach($pitems as $ikey => $pitem){
+                $newprice = $pitem['price'];
+                $currencies = wa('shop')->getConfig()->getCurrencies(array($pitem['currency'], $currency));
+                $items[$ikey]['price'] = ceil($newprice * $currencies[$pitem['currency']]['rate']);
+                $items[$ikey]['currency'] = $currency;
+                $pnewprice = ceil($pitem['product']['price']);
+                $items[$ikey]['product']['price'] = $pnewprice;
+        }
 
         $order = array(
             'contact' => $contact,
@@ -248,6 +259,31 @@ class shopFrontendCheckoutAction extends waViewAction
             $order['params']['referer'] = $ref;
             $ref_parts = parse_url($ref);
             $order['params']['referer_host'] = $ref_parts['host'];
+            // try get search keywords
+            if (!empty($ref_parts['query'])) {
+                $search_engines = array(
+                    'text' => 'yandex\.|rambler\.',
+                    'q' => 'bing\.com|mail\.|google\.',
+                    's' => 'nigma\.ru',
+                    'p' => 'yahoo\.com'
+                );
+                $q_var = false;
+                foreach ($search_engines as $q => $pattern) {
+                    if (preg_match('/('.$pattern.')/si', $ref_parts['host'])) {
+                        $q_var = $q;
+                        break;
+                    }
+                }
+                // default query var name
+                if (!$q_var) {
+                    $q_var = 'q';
+                }
+                parse_str($ref_parts['query'], $query);
+                if (!empty($query[$q_var])) {
+                    $order['params']['keyword'] = $query[$q_var];
+                }
+            }
+
         }
 
         $order['params']['ip'] = waRequest::getIp();
@@ -255,9 +291,6 @@ class shopFrontendCheckoutAction extends waViewAction
 
         foreach (array('shipping', 'billing') as $ext) {
             $address = $contact->getFirst('address.'.$ext);
-            if (!$address) {
-                $address = $contact->getFirst('address');
-            }
             if ($address) {
                 foreach ($address['data'] as $k => $v) {
                     $order['params'][$ext.'_address.'.$k] = $v;
@@ -271,9 +304,17 @@ class shopFrontendCheckoutAction extends waViewAction
 
         $workflow = new shopWorkflow();
         if ($order_id = $workflow->getActionById('create')->run($order)) {
+            
+            $step_number = shopCheckout::getStepNumber();
+            $checkout_flow = new shopCheckoutFlowModel();
+            $checkout_flow->add(array(
+                'step' => $step_number
+            ));
+            
             $cart->clear();
             wa()->getStorage()->remove('shop/checkout');
             wa()->getStorage()->set('shop/order_id', $order_id);
+            
             return true;
         }
     }

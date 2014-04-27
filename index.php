@@ -1,5 +1,5 @@
 <?php
-
+ini_set('max_execution_time', 600);
 $path = dirname(__FILE__).'/wa-config/SystemConfig.class.php';
 
 if (file_exists($path)) {

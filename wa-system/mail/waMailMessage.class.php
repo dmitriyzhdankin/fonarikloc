@@ -103,8 +103,6 @@ class waMailMessage extends Swift_Message
             }
         }
         $mailer = new waMail(waMail::getTransportByEmail(key($this->getFrom())));
-        
-         //mail('xinhuman@gmail.com', 'My Subject3', $message);
         return $mailer->send($this);
     }
 }

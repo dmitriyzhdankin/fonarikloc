@@ -2079,7 +2079,7 @@ ul#product-skus {
 height: 50px;
 position: absolute;
 top: 400px;
-z-index: 100;
+z-index: 98;
 }
 .product_page .entry_content .soc img{float: right}
 /*** Tab ***/
@@ -4075,3 +4075,19 @@ background: url(../images/bg_arows.png) no-repeat left top;
 #sidebar .related .c_header {
     margin: 0;
 }
+
+.image {
+    position: relative;
+}
+.badge { z-index: 100; position: absolute; top: 10px; right: 10px; display: table; background: #fff; border-radius: 50%; border: 4px double rgba(0,0,0,0.3); width: 30px; height: 30px; transform: rotate(-13deg); -webkit-transform: rotate(-13deg); -moz-transform: rotate(-13deg); -o-transform: rotate(-13deg); box-shadow: 0 3px 10px rgba(0,0,0,0.3); color: #000; font-weight: bold; font-style: italic; font-size: 14px; padding: 11px 13px 15px; }
+.badge span { display: table-cell; vertical-align: middle; text-align: center; line-height: 1.2em; }
+.badge.new { background: #ff4; color: #000; }
+.badge.bestseller { background: #74ff30; color: #030; }
+.badge.low-price { background: #ffc2e3; color: #300; }
+
+ul.thumbs .badge { font-size: 1.05em; width: 70px; height: 70px; padding: 2px; }
+ul.thumbs .badge span { width: 68px; margin-top: 28px; overflow: hidden; }
+table.table { margin: 20px 0; }
+table.table .image { margin-right: 10px; width: 48px; }
+table.table .badge { font-size: 0.8em; width: 24px; height: 24px; padding: 3px 3px 4px; border: 0; }
+table.table .badge span { display: block; width: 20px; overflow: hidden; padding-top: 6px; padding-left: 3px; }

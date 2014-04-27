@@ -52,6 +52,12 @@ $.order_edit = {
         if (options.title) {
             document.title = title;
         }
+        
+        if (!options.float_delimeter) {
+            options.float_delimeter = '.';
+        }
+        
+        this.float_delimeter = options.float_delimeter;
 
         this.initView();
     },
@@ -61,20 +67,6 @@ $.order_edit = {
         this.initCustomerForm(this.id ? 'edit' : 'add');
 
         // helpers and handlers here
-
-        var validateQuantity = function(item) {
-            var max_value = parseInt(item.attr('data-max-value'), 10);
-            var val = parseInt(item.val(), 10);
-            if (isNaN(max_value)) {
-                return true;
-            } else {
-                if (isNaN(val)) {
-                    return false;
-                } else {
-                    return val <= max_value;
-                }
-            }
-        };
         var updateStockIcon = function(order_item) {
             var select   = order_item.find('.s-orders-stock');
             var option   = select.find('option:selected');
@@ -112,14 +104,15 @@ $.order_edit = {
 
         this.updateTotal(false);
         $('.s-order-item').each(function() {
-            updateStockIcon($(this));
+            var item = $(this);
+            updateStockIcon(item);
         });
 
         var price_edit = options.price_edit || false;
 
         var add_order_input = $("#orders-add-autocomplete");
         add_order_input.autocomplete({
-            source : '?action=autocomplete&with_counts=1',
+            source : '?action=autocomplete&with_counts=1&with_sku_name=1',
             minLength : 3,
             delay : 300,
             select : function(event, ui) {
@@ -129,14 +122,13 @@ $.order_edit = {
                 var url = '?module=orders&action=getProduct&product_id=' + ui.item.id;
                 $.getJSON(url + ($.order_edit.id ? '&order_id=' + $.order_edit.id : ''), function(r) {
                     var table = $('#order-items');
-                    var order_items_tr = table.find('.s-order-item');
-                    var product = r.data;
+                    var index = parseInt(table.find('.s-order-item:last').attr('data-index'), 10) + 1 || 1;
+                    var product = r.data.product;
                     product.skus[product.sku_id].checked = true;
-
                     var add_row = $('#s-orders-add-row');
                     add_row.before(tmpl('template-order', {
                         data: r.data, options: {
-                            index: order_items_tr.length,
+                            index: index,
                             currency: $.order_edit.options.currency,
                             stocks: $.order_edit.stocks
                         }
@@ -146,13 +138,7 @@ $.order_edit = {
 
                     $('#s-order-comment-edit').show();
 
-                    var quantity_item = item.find('.s-orders-quantity');
-                    if (!validateQuantity(quantity_item)) {
-                        quantity_item.addClass('error');
-                    } else {
-                        $.order_edit.updateTotal();
-                        quantity_item.removeClass('error');
-                    }
+                    $.order_edit.updateTotal();
 
                     updateStockIcon(item);
 
@@ -182,7 +168,8 @@ $.order_edit = {
                     $.getJSON(url + ($.order_edit.id ? '&order_id=' + $.order_edit.id : ''), function(r) {
                         tr.find('.s-orders-services').replaceWith(
                             tmpl('template-order-services', {
-                                services: r.data.services,
+                                services: r.data.sku.services,
+                                service_ids: r.data.service_ids,
                                 product_id: product_id,
                                 options: {
                                     price_edit: price_edit,
@@ -194,15 +181,22 @@ $.order_edit = {
                         );
                         tr.find('.s-orders-services .s-orders-service-variant').trigger('change');
                         tr.find('.s-orders-product-price').
-                            find('span').text(r.data.price_str).end().
-                            find('input').val(r.data.price).trigger('change');
+                            find('span').text(r.data.sku.price_str).end().
+                            find('input').val(r.data.sku.price).trigger('change');
+
+                        var ns;
+                        if (tr.find('input:first').attr('name').indexOf('add') !== -1) {
+                            ns = 'add';
+                        } else {
+                            ns = 'edit';
+                        }
 
                         tr.find('.s-orders-product-stocks').replaceWith(
-                            tmpl('template-order-stocks-' + mode, {
-                                sku:     r.data,
+                            tmpl('template-order-stocks-' + ns, {
+                                sku:     r.data.sku,
                                 index:   index,
                                 stocks:  $.order_edit.stocks,
-                                item_id: item_id   // use only in edit mode
+                                item_id: item_id   // use only for edit namespace
                             })
                         );
 
@@ -216,20 +210,33 @@ $.order_edit = {
         this.container.
             off('change', '.s-orders-stock').
             on( 'change', '.s-orders-stock', function() {
-                updateStockIcon(
-                    $(this).parents('tr.s-order-item:first')
-                );
+                var item = $(this).parents('tr.s-order-item:first');
+                updateStockIcon(item);
             });
 
+        var updateServicePriceInput = function(variant_option, service_input, update_val) {
+                var price = variant_option.attr('data-price');
+                var percent_price = variant_option.attr('data-percent-price');
+                if (update_val) {
+                    service_input.val(price);
+                }
+                service_input.attr('data-price', price);
+                service_input.attr('data-percent-price', percent_price);
+        };
         this.container.
             off('change', '.s-orders-service-variant').
             on('change', '.s-orders-service-variant', function() {
                 var self = $(this);
                 var option = self.find('option:selected');
                 var li = self.parents('li:first');
-                li.find('.s-orders-service-price').val(option.attr('data-price'));
-            }
-        );
+                updateServicePriceInput(option, li.find('.s-orders-service-price'), true);
+        });
+        this.container.find('.s-orders-service-variant').each(function() {
+                var item = $(this);
+                var option = item.find('option:selected');
+                var li = item.parents('li:first');
+                updateServicePriceInput(option, li.find('.s-orders-service-price'), false);            
+        });
 
         this.container.off('click', '.s-order-item-delete').on('click', '.s-order-item-delete', function() {
 //            $(this).parents('tr:first').replaceWith(
@@ -252,7 +259,18 @@ $.order_edit = {
             on('change', '.s-orders-services input', $.order_edit.updateTotal);
         this.container.
             off('change', '.s-orders-product-price input').
-            on('change', '.s-orders-product-price input', $.order_edit.updateTotal);
+            on('change', '.s-orders-product-price input', function() {
+                var price = $.order_edit.parseFloat($(this).val());
+                $.order_edit.container.find('.s-orders-service-price').each(function() {
+                    var item = $(this);
+                    if (item.data('currency') === '%' && item.attr('data-price') === item.val()) {
+                        var p = price * (item.data('percentPrice') / 100);
+                        item.val($.order_edit.formatFloat(p));
+                        item.attr('data-price', p);
+                    }
+                });
+                $.order_edit.updateTotal.apply(this);
+            });
         this.container.
             off('change', '.s-orders-services .s-orders-service-variant').
             on('change', '.s-orders-services .s-orders-service-variant',
@@ -268,7 +286,7 @@ $.order_edit = {
         $("#shipping_methods").change(function() {
             var o = $(this).children(':selected');
             var rate = o.data('rate');
-            $("#shipping-rate").val(rate);
+            $("#shipping-rate").val($.order_edit.formatFloat(rate));
             if (o.data('error')) {
                 $("#shipping-rate").addClass('error');
                 $("#shipping-info").html('<span class="error">' + o.data('error') + '</span>').show();
@@ -298,18 +316,21 @@ $.order_edit = {
                 clearTimeout(timer_id);
             }
             self.data('timer_id', setTimeout(function() {
-                if (!validateQuantity(self)) {
-                    self.addClass('error');
-                } else {
-                    $.order_edit.updateTotal();
-                    self.removeClass('error');
-                }
+                $.order_edit.updateTotal();
             }, 450));
         });
 
         if (this.form && this.form.length) {
             this.form.unbind('sumbit').bind('submit', function() {
                 $.order_edit.showValidateErrors();
+                
+                // submit optimization
+                // disable that services that aren't checked
+                $('.s-orders-services input[name^=service]:not(:checked)', this.form).each(function() {
+                    var item = $(this);
+                    item.closest('li').find(':input').attr('disabled', true);
+                });
+                
                 if (!$.order_edit.container.find('.error').length) {
                     if ($.order_edit.id) {
                         $.order_edit.editSubmit();
@@ -321,6 +342,7 @@ $.order_edit = {
             });
         }
     },
+    
 
     updateTotal : function(ajax) {
         var ajax = ajax === undefined ? true : ajax;
@@ -330,13 +352,6 @@ $.order_edit = {
             $("#total").text(0);
             return;
         }
-        var extParseFloat = function(str) {
-            if (!str) {
-                return 0;
-            } else {
-                return parseFloat(('' + str).replace(',', '.'));
-            }
-        };
         var subtotal = 0;
 
         // Data for orderTotal controller
@@ -351,8 +366,8 @@ $.order_edit = {
             var tr = $(this);
             var product_id = tr.find('input[name^="product"]').val();
             var item_price = 0;
-            var price = extParseFloat(tr.find('.s-orders-product-price input').val());
-            var quantity = extParseFloat(tr.find('input.s-orders-quantity').val());
+            var price = $.order_edit.parseFloat(tr.find('.s-orders-product-price input').val());
+            var quantity = $.order_edit.parseFloat(tr.find('input.s-orders-quantity').val());
 
             subtotal   += price * quantity;
             item_price += price * quantity;
@@ -360,7 +375,7 @@ $.order_edit = {
             if (tr.find('.s-orders-services').length) {
                 tr.find('.s-orders-services input:checkbox:checked').each(function() {
                     var li = $(this).closest('li');
-                    price = extParseFloat(li.find('input.s-orders-service-price').val());
+                    price = $.order_edit.parseFloat(li.find('input.s-orders-service-price').val());
 
                     subtotal   += price * quantity;
                     item_price += price * quantity;
@@ -374,7 +389,7 @@ $.order_edit = {
             });
         });
         data.subtotal = subtotal;
-        var discount = extParseFloat($("#discount").val() || 0);
+        var discount = $.order_edit.parseFloat($("#discount").val() || 0);
         data.discount = discount;
         if ($.order_edit.id) {
             data.order_id =  $.order_edit.id;
@@ -387,22 +402,44 @@ $.order_edit = {
                     var el = $("#shipping_methods");
                     var el_selected = el.val();
                     el.empty();
-                    for (var ship_id in response.data.shipping_methods) {
-                        var ship =  response.data.shipping_methods[ship_id];
+                    
+                    var shipping_method_ids = response.data.shipping_method_ids;
+                    var shipping_methods = response.data.shipping_methods;
+                    
+                    // exact match
+                    var found = shipping_method_ids.indexOf(el_selected) !== -1;
+                    
+                    for (var i = 0; i < shipping_method_ids.length; i += 1) {
+                        var ship_id = shipping_method_ids[i];
+                        var ship =  shipping_methods[ship_id];
                         var o = $('<option></option>');
                         o.html(ship.name).attr('value', ship_id).data('rate', ship.rate);
                         if (ship.error) {
                             o.data('error', ship.error);
                         }
                         el.append(o);
+                        
+                        // unexact match, but close
+                        if (!found) {
+                            var ship_id_parts = ('' + ship_id).split('.');
+                            var el_selected_parts = el_selected.split('.');
+                            if (ship_id_parts[0] !== undefined && el_selected_parts[0] !== undefined && 
+                                    ship_id_parts[0] == el_selected_parts[0])
+                            {
+                                    found = true;
+                                    el_selected = ship_id;
+                            }
+                        }
                     }
-                    el.val(el_selected).change();
+                    if (found) {
+                        el.val(el_selected).change();
+                    }
                 }
             }, 'json');
         }
 
-        $("#subtotal").text(Math.round(subtotal * 100) / 100);
-        var shipping = extParseFloat($("#shipping-rate").val().replace(',', '.')) || 0;
+        $("#subtotal").text($.order_edit.formatFloat(Math.round(subtotal * 100) / 100));
+        var shipping = $.order_edit.parseFloat($("#shipping-rate").val().replace(',', '.')) || 0;
         var undiscounted_total = subtotal + shipping;
 
         // correct discout by constraint: total must be >= 0
@@ -413,11 +450,11 @@ $.order_edit = {
             if (undiscounted_total - discount < 0) {
                 discount = undiscounted_total;
             }
-            $("#discount").val(Math.round(discount * 100) / 100);
+            $("#discount").val($.order_edit.formatFloat(Math.round(discount * 100) / 100));
         }
 
         var total = undiscounted_total - discount;
-        $("#total").text(Math.round(total * 100) / 100);
+        $("#total").text($.order_edit.formatFloat(Math.round(total * 100) / 100));
     },
 
     editSubmit : function() {
@@ -428,6 +465,7 @@ $.order_edit = {
             $.shop.trace('editSubmit', r);
             if (r && r.errors && !$.isEmptyObject(r.errors)) {
                 $.order_edit.showValidateErrors(r.errors);
+                $('.s-orders-services input:disabled', this.form).attr('disabled', false);
                 return false;
             }
         });
@@ -444,9 +482,25 @@ $.order_edit = {
             $.shop.trace('addSubmit', r);
             if (r && r.errors && !$.isEmptyObject(r.errors)) {
                 $.order_edit.showValidateErrors(r.errors);
+                $('.s-orders-services input:disabled', this.form).attr('disabled', false);
                 return false;
             }
         });
+    },
+    
+    formatFloat: function(float) {
+        if (this.float_delimeter === ',') {
+            return ('' + float).replace('.', ',');
+        }
+        return '' + float;
+    },
+            
+    parseFloat: function(str) {
+        if (!str) {
+            return 0;
+        } else {
+            return parseFloat(('' + str).replace(',', '.'));
+        }
     },
 
     slideBack : function() {
@@ -537,7 +591,7 @@ $.order_edit = {
     },
 
     showValidateErrors : function(validate_errors) {
-        $('#s-order-edit-customer .error').removeClass('error');
+        $('.error').removeClass('error');
         $('#s-order-edit-customer .errormsg').empty();
         if (validate_errors && validate_errors.customer) {
             var errors = validate_errors.customer;
@@ -554,6 +608,9 @@ $.order_edit = {
                 });
             }
         }
+        
+        var common_errors = [];
+        
         $('.s-order-errors').empty();
         if (validate_errors && validate_errors.order) {
             if (!$.isEmptyObject(validate_errors.order.items)) {
@@ -566,9 +623,28 @@ $.order_edit = {
                     delete validate_errors.order.items[index];
                 }
             }
-            if (validate_errors.order.common) {
-                $('.s-order-errors').html(validate_errors.order.common);
+
+
+            if (!$.isEmptyObject(validate_errors.order.product)) {
+                var p_errors = validate_errors.order.product;
+                for (var p_id in p_errors) {
+                    if (p_errors.hasOwnProperty(p_id)) {
+                        if ('quantity' in p_errors[p_id]) {
+                            var order_item = $('.s-order-item[data-product-id='+p_id+']');
+                            order_item.find('.s-orders-quantity').addClass('error');
+                            common_errors.push(p_errors[p_id]['quantity']);
+                        }
+                    }
+                }
             }
+            if (validate_errors.order.common) {
+                common_errors.push(validate_errors.order.common);
+            }
+            
+            if (common_errors.length) {
+                $('.s-order-errors').html(common_errors.join("<br>"));
+            }
+            
         }
     },
 
@@ -720,5 +796,9 @@ $.order_edit = {
 
     inputName : function(name) {
         return '"customer[' + name + ']"';
+    },
+            
+    getPercentSymbol: function() {
+        return '%';
     }
 };

@@ -43,7 +43,7 @@ class shopImage
     {
         $config = wa('shop')->getConfig();
         if ($quality === null) {
-            $quality = $config->getOption('image_save_quality');
+            $quality = $config->getSaveQuality();
             if (!$quality) {
                 $quality = 100;
             }
@@ -86,17 +86,17 @@ class shopImage
     }
 
     /**
-     *
      * @param array $image
      * @param array $sizes (optional)
      * generateThumbs
-     *
+     * @param bool $force
      * @throws waException
      */
     public static function generateThumbs($image, $sizes = array(), $force = true)
     {
         $sizes = (array) $sizes;
         $product_id = $image['product_id'];
+        $config = wa('shop')->getConfig();
         if (!empty($sizes) && !empty($image) && $product_id) {
             $thumbs_path = self::getThumbsPath($image);
             if (!file_exists($thumbs_path) && !waFiles::create($thumbs_path)) {
@@ -111,7 +111,7 @@ class shopImage
                      * @var waImage
                      */
                     if ($thumb_img = self::generateThumb($image_path, $size)) {
-                        $thumb_img->save($thumb_path);
+                        $thumb_img->save($thumb_path, $config->getSaveQuality());
                     }
                 }
             }
@@ -119,7 +119,7 @@ class shopImage
         }
     }
 
-    public static function generateThumb($src_image_path, $size, $max_size = false)
+    public static function generateThumb($src_image_path, $size)
     {
         $image = waImage::factory($src_image_path);
         $width = $height = null;
@@ -148,8 +148,8 @@ class shopImage
                 } else {
                     $h = $image->height;
                     $w = $image->height * $width / $height;
-                }
-                $image->crop($w, $h)->resize($width, $height);
+                }                
+                $image->crop($w, $h)->resize($width, $height, waImage::INVERSE);
                 break;
             default:
                 throw new waException("Unknown type");
@@ -242,9 +242,9 @@ class shopImage
     /**
      * Calculate dimensions of thumbnail
      *
-     * @param array $photo Key-value object with image info
+     * @param array $image Key-value object with image info
      * @param string $size string size-code or key-value object returned by parseSize
-     * @returns array Key-value object with width and height values
+     * @return array Key-value object with width and height values
      */
     public static function getThumbDimensions($image, $size = null)
     {

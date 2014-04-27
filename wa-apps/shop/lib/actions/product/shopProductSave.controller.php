@@ -8,8 +8,20 @@ class shopProductSaveController extends waJsonController
             $this->update($update);
             return;
         }
-
+        
         $data = waRequest::post('product');
+        $skus = waRequest::post('skus', array());
+        if (isset($data['skus'])) {
+            foreach ($skus as $s_id => $s) {
+                if (isset($data['skus'][$s_id])) {
+                    $data['skus'][$s_id] += $s;
+                } else {
+                    $data['skus'][$s_id] = $s;
+                }
+            }
+        } else {
+            $data['skus'] = $skus;
+        }
         $id = (empty($data['id']) || !intval($data['id'])) ? null : $data['id'];
         if (!$id && isset($data['id'])) {
             unset($data['id']);
@@ -68,8 +80,13 @@ class shopProductSaveController extends waJsonController
                 }
             }
 
+            // for logging changes in stocks
+            shopProductStocksLogModel::setContext(shopProductStocksLogModel::TYPE_PRODUCT);
+
             if ($product->save($data, true, $this->errors)) {
 
+                shopProductStocksLogModel::clearContext();
+                
                 // selectable features
                 if ($product->sku_type == shopProductModel::SKU_TYPE_FLAT) {
 
@@ -87,28 +104,75 @@ class shopProductSaveController extends waJsonController
                 $this->response['name'] = $product->name;
                 $this->response['url'] = $product->url;
 
-                $frontend_url = null;
-                $fontend_base_url = null;
+                $frontend_urls = array();
 
                 $routing = wa()->getRouting();
                 $domain_routes = $routing->getByApp($this->getAppId());
                 foreach ($domain_routes as $domain => $routes) {
                     foreach ($routes as $r) {
+                        if (!empty($r['private'])) {
+                            continue;
+                        }
                         if (empty($r['type_id']) || (in_array($product->type_id, (array) $r['type_id']))) {
                             $routing->setRoute($r, $domain);
-                            $frontend_url = $routing->getUrl('/frontend/product', array('product_url' => $product->url), true);
-                            break;
+                            $url_params = array('product_url' => $product->url);                            
+                            if ($product->category_id) {
+                                $category_model = new shopCategoryModel();
+                                $category = $category_model->getById($product->category_id);
+                                if ($category) {
+                                    if (!empty($r['url_type']) && ($r['url_type'] == 1)) {
+                                        $url_params['category_url'] = $category['url'];
+                                    } else {
+                                        $url_params['category_url'] = $category['full_url'];
+                                    }
+                                }
+                            }
+                            $frontend_url = $routing->getUrl('/frontend/product', $url_params, true);
+                            $pos = strrpos($frontend_url, $product->url);
+                            $frontend_urls[] = array(
+                                'url' => $frontend_url,
+                                'base' => $pos !== false ? rtrim(substr($frontend_url, 0, $pos), '/').'/' : $frontend_url
+                            );
                         }
                     }
                 }
-                if ($frontend_url) {
-                    $pos = strrpos($frontend_url, $product->url);
-                    $fontend_base_url = $pos !== false ? rtrim(substr($frontend_url, 0, $pos), '/').'/' : $frontend_url;
-                }
-
-                $this->response['frontend_url'] = $frontend_url;
-                $this->response['fontend_base_url'] = $fontend_base_url;
+                
+                $this->response['frontend_urls'] = $frontend_urls;
                 $this->response['raw'] = $this->workupData($product->getData());
+                
+                $sales_rate = waRequest::post('sales_rate', 0, waRequest::TYPE_STRING_TRIM);
+                $sales_rate = (double) str_replace(',', '.', $sales_rate);
+                
+                $runout = $product->getRunout($sales_rate);
+                if (!empty($runout['product'])) {
+                    $runout['product']['date_str'] = wa_date("humandate", $runout['product']['date']);
+                    $runout['product']['days_str'] = _w('%d day', '%d days', $runout['product']['days']);
+                    if ($runout['product']['days'] < 3*365 && $runout['product']['days'] > 0) {
+                        $runout['product_str'] = 
+                            sprintf(_w('Based on last 30 days sales dynamic (%d items of %s sold during last 30 days), you will run out of %s in <strong>%d days</strong> (on %s)'),
+                                $sales_rate * 30, $product->name, $product->name, $runout['product']['days'], wa_date("humandate", $runout['product']['date'])
+                            );
+                    }
+                } else {
+                    $runout['product'] = new stdClass();    /* {} */
+                }
+                if (!empty($runout['sku'])) {
+                    foreach ($runout['sku'] as &$sk_r) {
+                        if (empty($sk_r['stock'])) {
+                            $sk_r['date_str'] = wa_date("humandate", $sk_r['date']);
+                            $sk_r['days_str'] = _w('%d day', '%d days', $sk_r['days']);
+                        } else {
+                            foreach ($sk_r['stock'] as &$st_r) {
+                                $st_r['date_str'] = wa_date("humandate", $st_r['date']);
+                                $st_r['days_str'] = _w('%d day', '%d days', $st_r['days']);
+                            }
+                        }
+                    }
+                    unset($sk_r, $st_r);
+                } else {
+                    $runout['sku'] = new stdClass();    /* {} */
+                }
+                $this->response['raw']['runout'] = $runout;
 
                 if ($features_counts !== null) {
 
@@ -119,6 +183,9 @@ class shopProductSaveController extends waJsonController
                         'skus'    => _w('%d SKU in total', '%d SKUs in total', $features_total_count)
                     );
                 }
+                
+                $this->response['storefront_map'] = $product_model->getStorefrontMap($product->id);
+                
             }
         } catch (Exception $ex) {
             $this->setError($ex->getMessage());
@@ -174,6 +241,7 @@ class shopProductSaveController extends waJsonController
                 continue;
             }
             $skus[$i--] = array_merge(array(
+                'sku'       => '',
                 'name'      => implode(', ', $names),
                 'features'  => $f,
                 'virtual'   => 1,
@@ -258,7 +326,15 @@ class shopProductSaveController extends waJsonController
     public function workupData($data)
     {
         $currency = $data['currency'] ? $data['currency'] : $this->getConfig()->getCurrency();
-        foreach ($data['skus'] as & $sku) {
+        
+        $file_names = array();  // sku_id => filename of attachment
+        
+        foreach ($data['skus'] as &$sku) {
+            if (!isset($sku['file_name'])) {
+                $file_names[$sku['id']] = '';   // need to obtain filename
+            }
+            // price in light of l18n: if ru - delimeter is ',', if en - delimeter is '.'
+            $sku['price_loc'] = (string) ((float) $sku['price']);
             $sku['price_str'] = wa_currency($sku['price'], $currency);
             $sku['stock_icon'] = array();
             $sku['stock_icon'][0] = shopHelper::getStockCountIcon($sku['count']);
@@ -269,6 +345,16 @@ class shopProductSaveController extends waJsonController
             }
         }
         unset($sku);
+        
+        // obtain filename
+        if ($file_names) {
+            $product_skus_model = new shopProductSkusModel();
+            $file_names = $product_skus_model->select('id, file_name')->where("id IN('".implode("','", array_keys($file_names))."')")->fetchAll('id', true);
+            foreach ($file_names as $sku_id => $file_name) {
+                $data['skus'][$sku_id]['file_name'] = $file_name;
+            }
+        }
+        
         return $data;
     }
 }

@@ -4,14 +4,15 @@ class shopFrontendShippingController extends waJsonController
 {
     public function execute()
     {
-
         $cart = new shopCart();
         $total = $cart->total();
 
         $shipping = new shopCheckoutShipping();
         $items = $shipping->getItems();
 
+
         if (waRequest::method() == 'post') {
+            wa()->getStorage()->close();
             $shipping_id = waRequest::post('shipping_id');
             $customer = waRequest::post('customer_'.$shipping_id);
             if (isset($customer['address.shipping'])) {
@@ -27,6 +28,7 @@ class shopFrontendShippingController extends waJsonController
             }
         } elseif ($shipping_ids = waRequest::get('shipping_id', array(), waRequest::TYPE_ARRAY_INT)) {
             $address = $shipping->getAddress();
+            wa()->getStorage()->close();
             $empty = true;
             foreach ($address as $v) {
                 if ($v) {
@@ -61,7 +63,7 @@ class shopFrontendShippingController extends waJsonController
         if ($weight_unit != $dimension['base_unit']) {
             foreach ($items as $item_id => $item) {
                 if ($item['weight']) {
-                    $items[$item_id]['weight'] = $item['weight'] * $dimension['units'][$weight_unit]['multiplier'];
+                    $items[$item_id]['weight'] = $item['weight'] / $dimension['units'][$weight_unit]['multiplier'];
                 }
             }
         }
@@ -72,8 +74,10 @@ class shopFrontendShippingController extends waJsonController
         }
         $rates = $plugin->getRates($items, $address, array('total_price' => $total));
         if (is_array($rates)) {
+            $is_html = waRequest::request('html');
             foreach ($rates as $r_id => &$r) {
                 $r['id'] = $r_id;
+                $r['rate_html'] = $is_html ? shop_currency_html($r['rate'], $r['currency']) : shop_currency($r['rate'], $r['currency']);
                 $r['rate'] = shop_currency($r['rate'], $r['currency']);
             }
             unset($r);

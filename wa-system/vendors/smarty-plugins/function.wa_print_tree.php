@@ -31,13 +31,18 @@ function smarty_function_wa_print_tree($params, &$smarty)
         unset($params['unfolded']);
     }
 
-
-    $html = '<ul class="menu-v'.(isset($params['class']) ? ' '.$params['class'] : '').'"'.(isset($params['attrs']) ? ' '.$params['attrs'] : '').'>';
+    $html = '<ul'. (isset($params['class']) ? ' class="'.$params['class'].'"' : '').(isset($params['attrs']) ? ' '.$params['attrs'] : '').'>';
     if (isset($params['attrs'])) {
         unset($params['attrs']);
     }
     if (isset($params['class'])) {
-        unset($params['class']);
+        if (strpos($params['class'], 'menu-v') !== false) {
+            $params['class'] = 'menu-v';
+        } elseif (strpos($params['class'], 'menu-h') !== false) {
+            $params['class'] = 'menu-v';
+        } else {
+            unset($params['class']);
+        }
     }
     preg_match_all('/:([a-z_]+(?:\.[a-z]+)?)/', $params['elem'], $match);
 

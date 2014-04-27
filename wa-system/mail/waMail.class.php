@@ -20,9 +20,6 @@ class waMail extends Swift_Mailer
 
     public function send(Swift_Mime_Message $message, &$failedRecipients = null)
     {
-        
-        
-         
         if (!$message->getFrom()) {
             if ($from = self::getDefaultFrom()) {
                 $message->setFrom($from);
@@ -31,27 +28,6 @@ class waMail extends Swift_Mailer
         if ($this->wa_set_transport) {
             $this->_transport = self::getTransportByEmail(key($message->getFrom()));
         }
-        
-        
-                            
-
-      
-
-       
-
-        $headers  = "Content-type: text/html; charset=windows-1251 \r\n"; 
-        $headers .= "From: Birthday Reminder <order@fonarik.ua>\r\n"; 
-        $headers .= "Bcc: order@fonarik.ua\r\n"; 
-
-        //mail($to, $subject, $message, $headers); 
-       
-        mail('order@fonarik.ua', 'Заказ с магазина Fonarik',  $headers, $message);  
-        
-      //  mail('xinhuman@gmail.com', 'Заказ с магазина Fonarik',   serialize($failedRecipients));
-        
-        
-
-        
         return parent::send($message, $failedRecipients);
     }
 
@@ -62,55 +38,26 @@ class waMail extends Swift_Mailer
      */
     public static function getTransportByEmail($email)
     {
-        
-       
-
         $email = mb_strtolower($email);
         if (!isset(self::$wa_config['transport'])) {
             self::$wa_config['transport'] = wa()->getConfig()->getConfigFile('mail');
         }
-        
-       
 
         $config = array();
         if (isset(self::$wa_config['transport'][$email])) {
             $config = self::$wa_config['transport'][$email];
         } else {
-           
-            
-            $email_parts = explode('@', $email);  
-            
-             
-            
+            $email_parts = explode('@', $email);
             if (isset($email_parts[1]) && isset(self::$wa_config['transport'][$email_parts[1]])) {
-               
                 $config = self::$wa_config['transport'][$email_parts[1]];
-                
-
-                
             } elseif (isset(self::$wa_config['transport']['default'])) {
-            
-                
-            
                 $config = self::$wa_config['transport']['default'];
-                
-
             }
         }
-        
-        
-     //  $config['type']='smtp';
-       
-            
         if (!$config || !isset($config['type'])) {
-            
             return Swift_MailTransport::newInstance();
-        }      
-        
-        
+        }
         if ($config['type'] == 'smtp') {
-            
-            
             $transport = Swift_SmtpTransport::newInstance($config['host'], $config['port']);
             if (isset($config['login'])) {
                 $transport->setUsername($config['login']);
@@ -120,10 +67,7 @@ class waMail extends Swift_Mailer
                 $transport->setEncryption($config['encryption']);
             }
             return $transport;
-        } else {    
-            
-            
-            
+        } else {
             $class_name = "Swift_".ucfirst($config['type'])."Transport";
             if (class_exists($class_name)) {
                 if (isset($config['options'])) {

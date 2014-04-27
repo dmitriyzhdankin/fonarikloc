@@ -58,7 +58,7 @@
    		     			<a href="{$wa->getUrl('shop/frontend/cart')}">
    		     				<i class="icon16 cart{if !$cart_total} empty{/if}"></i>
    		     				[s`Shopping cart`]:
-   		     				<strong class="cart-total">{wa_currency($cart_total, $wa->shop->currency())}</strong>
+   		     				<strong class="cart-total">{wa_currency($cart_total | ceil, $wa->shop->currency())}</strong>
    		     			</a>
    		     		</div>
         		{/if}

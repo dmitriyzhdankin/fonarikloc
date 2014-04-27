@@ -16,6 +16,13 @@ class shopCheckoutContactinfo extends shopCheckout
         $contact = $this->getContact();
         if ($contact) {
             $this->form->setValue($contact);
+
+            // Make sure there are no more than one address of each type in the form
+            foreach(array('address', 'address.shipping', 'address.billing') as $fld) {
+                if (isset($this->form->values[$fld]) && count($this->form->values[$fld]) > 1) {
+                    $this->form->values[$fld] = array(reset($this->form->values[$fld]));
+                }
+            }
         }
         $view = wa()->getView();
         $view->assign('checkout_contact_form', $this->form);
@@ -23,6 +30,18 @@ class shopCheckoutContactinfo extends shopCheckout
         if (!$view->getVars('error')) {
             $view->assign('error', array());
         }
+        
+        $checkout_flow = new shopCheckoutFlowModel();
+        $step_number = shopCheckout::getStepNumber('contactinfo');
+        // IF no errors 
+        $checkout_flow->add(array(
+            'step' => $step_number
+        ));
+        // ELSE
+//        $checkout_flow->add(array(
+//            'step' => $step_number,
+//            'description' => ERROR MESSAGE HERE
+//        ));
     }
 
     public function validate()
@@ -54,18 +73,23 @@ class shopCheckoutContactinfo extends shopCheckout
             }
         }
 
-        if ($shipping = $this->getSessionData('shipping')) {
+        if ($shipping = $this->getSessionData('shipping') && !waRequest::post('ignore_shipping_error')) {
             $shipping_step = new shopCheckoutShipping();
             $rate = $shipping_step->getRate($shipping['id'], isset($shipping['rate_id']) ? $shipping['rate_id'] : null, $contact);
             if (!$rate || is_string($rate)) {
+                // remove selected shipping method
+                $this->setSessionData('shipping', null);
+                /*
                 $errors = array();
                 $errors['all'] = sprintf(_w('We cannot ship to the specified address via %s.'), $shipping['name']);
                 if ($rate) {
                     $errors['all'] .= '<br> <strong>'.$rate.'</strong><br>';
                 }
                 $errors['all'] .= '<br> '._w('Please double-check the address above, or return to the shipping step and select another shipping option.');
+                $errors['all'] .= '<input type="hidden" name="ignore_shipping_error" value="1">';
                 wa()->getView()->assign('errors', $errors);
                 return false;
+                */
             }
         }
 
@@ -75,6 +99,12 @@ class shopCheckoutContactinfo extends shopCheckout
             $errors = array();
             if (waRequest::post('create_user')) {
                 $login = waRequest::post('login');
+                if (!$login) {
+                    $errors['email'][] = _ws('Required');
+                }
+                if (!waRequest::post('password')) {
+                    $errors['password'] = _ws('Required');
+                }
                 $email_validator = new waEmailValidator();
                 if (!$email_validator->isValid($login)) {
                     $errors['email'] = $email_validator->getErrors();
@@ -260,6 +290,17 @@ class shopCheckoutContactinfo extends shopCheckout
         }
         if (!empty($opts['_disabled'])) {
             if (!empty($opts['_default_value_enabled']) && isset($opts['_default_value']) && strlen($opts['_default_value'])) {
+
+                // A hack for region field: when user specifies region name, replace it with region code.
+                // In case there's a region with code equal to another region's name, prefer the former.
+                if ($field instanceof waContactRegionField) {
+                    $rm = new waRegionModel();
+                    $regions = $rm->select('code, code AS a')->where('code = s:0 OR name = s:0', $opts['_default_value'])->query()->fetchAll('code', true);
+                    if ($regions && empty($regions[$opts['_default_value']])) {
+                        $opts['_default_value'] = reset($regions);
+                    }
+                }
+
                 return array(
                     array(
                         'hidden' => true,

@@ -17,18 +17,13 @@ abstract class waView
 
     protected $postfix = '.html';
 
-    /**
-     * @var waSystem
-     */
-    protected $system;
-
     protected $options = array();
     protected $helper;
 
     public function __construct(waSystem $system, $options = array())
     {
-        $this->system = $system;
         $this->helper = new waViewHelper($this);
+        $this->setOptions($options);
     }
 
     /**
@@ -61,16 +56,15 @@ abstract class waView
 
     protected function prepare()
     {
-          $this->assign('wa_url', $this->system->getRootUrl());
+          $this->assign('wa_url', wa()->getRootUrl());
           $this->assign('wa_backend_url', waSystem::getInstance()->getConfig()->getBackendUrl(true));
-          $this->assign('wa_app', $this->system->getApp());
-          $this->assign('wa_app_url', $this->system->getAppUrl(null, true));
-          $this->assign('wa_app_static_url', $this->system->getAppStaticUrl());
+          $this->assign('wa_app', wa()->getApp());
+          $this->assign('wa_app_url', wa()->getAppUrl(null, true));
+          $this->assign('wa_app_static_url', wa()->getAppStaticUrl());
           if (!$this->helper) {
               $this->helper = new waViewHelper($this);
           }
           $this->assign('wa', $this->helper);
-		  require_once('wpHelper.php');
     }
 
     abstract public function fetch($template, $cache_id = null);
@@ -123,14 +117,21 @@ abstract class waView
     {
         $this->assign('wa_active_theme_path', $theme->path);
         $this->assign('wa_active_theme_url', $theme->url);
+        $this->assign('wa_theme_version', $theme->version());
+        $theme_settings = $theme->getSettings(true);
+
         $file = $theme->getFile($template);
         if ($parent_theme = $theme->parent_theme) {
-            if ($file['parent']) {
+            if (!empty($file['parent'])) {
                 $theme = $parent_theme;
             }
             $this->assign('wa_parent_theme_url', $parent_theme->url);
             $this->assign('wa_parent_theme_path', $parent_theme->path);
+            if ($parent_settings = $parent_theme->getSettings(true)) {
+                $theme_settings = $theme_settings + $parent_settings;
+            }
         }
+        $this->assign('theme_settings', $theme_settings);
         $this->assign('wa_theme_url', $theme->url);
         $this->setTemplateDir($theme->path);
         return file_exists($theme->path.'/'.$template);

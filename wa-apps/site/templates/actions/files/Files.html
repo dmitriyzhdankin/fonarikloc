@@ -54,6 +54,7 @@
 				<th><span class="float-right">[`Size`]</span></th>
 		</tr>
 		</table>
+        <div class="s-pagination"></div>
 		<div class="clear"></div>
 	</div>
 </div>
@@ -232,6 +233,7 @@
 		$("#s-add-folder-dialog").waDialog({ 
 			onLoad: function () {
 				$(this).find('span').html($.wa.site.filesPath(true));
+                $('#s-folder-name').focus();
 			},
 			disableButtonsOnSubmit: true,
 			onSubmit: function () {

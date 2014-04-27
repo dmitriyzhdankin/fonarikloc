@@ -20,7 +20,7 @@ class waContactIMTopFormatter extends waContactFieldFormatter
 
         $icon = '';
         $ext = '';        
-        if (isset($data['ext']) && $data['ext'] && ( $f = waContactFields::get('gorod'))) {
+        if (isset($data['ext']) && $data['ext'] && ( $f = waContactFields::get('im'))) {
             $exts = $f->getParameter('ext');
             if (isset($exts[$data['ext']])) {
                 $ext = ' <em class="hint">'.$exts[$data['ext']].'</em>';
@@ -31,7 +31,7 @@ class waContactIMTopFormatter extends waContactFieldFormatter
         }
         
         if (!$icon) {
-            $icon = '<i class="icon16 gorod"></i>';
+            $icon = '<i class="icon16 im"></i>';
         }
         
         return $icon.$value.$ext;

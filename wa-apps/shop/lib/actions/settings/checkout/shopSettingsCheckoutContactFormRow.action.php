@@ -36,7 +36,7 @@ class shopSettingsCheckoutContactFormRowAction extends waViewAction
                 'String' => _w('Text (input)'),
                 'Select' => _w('Select'),
                 'Phone' => _w('Text (input)'),
-                'gorod' => _w('gorod'),
+                'IM' => _w('Text (input)'),
                 'Url' => _w('Text (input)'),
                 'Date' => _w('Date'),
                 'Composite' => _w('Composite field group'),

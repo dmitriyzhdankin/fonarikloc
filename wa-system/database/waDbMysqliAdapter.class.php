@@ -34,7 +34,7 @@ class waDbMysqliAdapter extends waDbAdapter
         }
         
         $charset = isset($settings['charset']) ? $settings['charset'] : 'utf8';
-        @$handler->query("SET NAMES '" . $charset . "' COLLATE '".$charset."_bin'");
+        @$handler->set_charset($charset);
         if (isset($settings['sql_mode'])) {
             $sql = "SET SESSION sql_mode = '".$handler->real_escape_string($settings['sql_mode'])."'";
             @$handler->query($sql);
@@ -59,6 +59,10 @@ class waDbMysqliAdapter extends waDbAdapter
         $r =  $this->handler->query($query);
         // check error MySQL server has gone away
         if (!$r && $this->handler->errno == 2006 && $this->handler->ping()) {
+            return $this->handler->query($query);
+        } elseif (!$r && $this->handler->errno == 1104) {
+            // try set sql_big_selects
+            $this->handler->query('SET SQL_BIG_SELECTS=1');
             return $this->handler->query($query);
         }
         return $r;
@@ -211,6 +215,11 @@ class waDbMysqliAdapter extends waDbAdapter
         foreach ($data as $field_id => $field) {
             if (substr($field_id, 0, 1) != ':') {
                 $type = $field['type'].(!empty($field['params']) ? '('.$field['params'].')' : '');
+                foreach (array('unsigned', 'zerofill') as $k) {
+                    if (!empty($field[$k])) {
+                        $type .= ' '.strtoupper($k);
+                    }
+                }
                 if (isset($field['null']) && !$field['null']) {
                     $type .= ' NOT NULL';
                 }

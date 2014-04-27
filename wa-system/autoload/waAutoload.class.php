@@ -85,6 +85,7 @@ class waAutoload
         } elseif (substr($class, 0, 4) === 'waDb') {
             return $this->base_path.'/wa-system/database/'.$class.'.class.php';
         } elseif (substr($class, 0, 2) == 'wa') {
+            if (strpos($class, '.') !== false) return null;
             $dir = preg_replace("/^wai?([A-Z][a-z]+).*?$/", "$1", $class);
             $path = $this->base_path.'/wa-system/'.strtolower($dir).'/'.$class.'.'.(substr($class, 0, 3) === 'wai' ? 'interface' : 'class').'.php';
             if (file_exists($path)) {
@@ -170,6 +171,8 @@ class waAutoload
         'waForgotPasswordAction'   => 'controller/waForgotPasswordAction.class.php',
         'waSignupAction'           => 'controller/waSignupAction.class.php',
         'waLongActionController'   => 'controller/waLongActionController.class.php',
+        'waMyNavAction'            => 'controller/waMyNavAction.class.php',
+        'waMyProfileAction'        => 'controller/waMyProfileAction.class.php',
         'waViewAction'             => 'controller/waViewAction.class.php',
         'waViewActions'            => 'controller/waViewActions.class.php',
         'waViewController'         => 'controller/waViewController.class.php',

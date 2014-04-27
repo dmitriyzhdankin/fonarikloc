@@ -28,11 +28,16 @@ class shopOrderTotalController extends waJsonController
 
         $shipping_items = array();
         foreach ($items as $i) {
+            if (isset($values['skus'][$i['sku_id']])) {
+                $w = $values['skus'][$i['sku_id']];
+            } else {
+                $w = isset($values[$i['product_id']]) ? $values[$i['product_id']] : 0;
+            }
             $shipping_items[] = array(
                 'name' => '',
                 'price' => $i['price'],
                 'quantity' => $i['quantity'],
-                'weight' => isset($values[$i['product_id']]) ? $values[$i['product_id']] : 0
+                'weight' => $w
             );
         }
 
@@ -48,6 +53,8 @@ class shopOrderTotalController extends waJsonController
 
         $this->response['shipping_methods'] = shopHelper::getShippingMethods($shipping_address, $shipping_items,
             array('currency' => $currency, 'total_price' => $total));
+        // for saving order in js
+        $this->response['shipping_method_ids'] = array_keys($this->response['shipping_methods']);
     }
 
     protected function getAddress()

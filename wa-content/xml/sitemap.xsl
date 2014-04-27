@@ -32,7 +32,6 @@
                         <tr style="border-bottom:1px black solid;">
                             <th>URL</th>
                             <th>Priority</th>
-                            <th>Image</th>
                             <th>Change Frequency</th>
                             <th>Last Modified (GMT)</th>
                         </tr>
@@ -53,16 +52,6 @@
                                         </xsl:when>
                                     </xsl:choose>
                                 </td>
-                                
-                                <td>
-                                    <xsl:variable name="imageURL">
-                                        <xsl:value-of select="sitemap:images"/>
-                                    </xsl:variable>
-                                    <a href="{$imageURL}">
-                                        <xsl:value-of select="sitemap:images"/>
-                                    </a>
-                                </td>
-                                
                                 <td>
                                     <xsl:value-of select="sitemap:changefreq"/>
                                 </td>
@@ -71,48 +60,6 @@
                                 </td>
                             </tr>
                         </xsl:for-each>
-                        <tr style="border-bottom:1px black solid;">
-                            <td><a href="http://fonarik.ua/oplata/">http://fonarik.ua/oplata/</a></td>
-                            <td>60%</td>
-                            <td></td> 
-                            <td>monthly</td>
-                            <td>2013-09-24 16:49:18+03:00</td>
-                        </tr>
-                        <tr style="border-bottom:1px black solid;">
-                            <td><a href="http://fonarik.ua/dostavka/">http://fonarik.ua/dostavka/</a></td>
-                            <td>60%</td>
-                            <td></td> 
-                            <td>monthly</td>
-                            <td>2013-09-24 16:49:18+03:00</td>
-                        </tr>
-                        <tr style="border-bottom:1px black solid;">
-                            <td><a href="http://fonarik.ua/garantiya/">http://fonarik.ua/garantiya/</a></td>
-                            <td>60%</td>
-                            <td></td> 
-                            <td>monthly</td>
-                            <td>2013-09-24 16:49:18+03:00</td>
-                        </tr>
-                        <tr style="border-bottom:1px black solid;">
-                            <td><a href="http://fonarik.ua/vozvrat/">http://fonarik.ua/vozvrat/</a></td>
-                            <td>60%</td>
-                            <td></td> 
-                            <td>monthly</td>
-                            <td>2013-09-24 16:49:18+03:00</td>
-                        </tr>
-                        <tr style="border-bottom:1px black solid;">
-                            <td><a href="http://fonarik.ua/kontakty/">http://fonarik.ua/kontakty/</a></td>
-                            <td>60%</td>
-                            <td></td> 
-                            <td>monthly</td>
-                            <td>2013-09-24 16:49:18+03:00</td>
-                        </tr>
-                        <tr style="border-bottom:1px black solid;">
-                            <td><a href="http://fonarik.ua/map.php">http://fonarik.ua/map.php</a></td>
-                            <td>60%</td>
-                            <td></td> 
-                            <td>monthly</td>
-                            <td>2013-09-24 16:49:18+03:00</td>
-                        </tr>
                     </table>
                 </div>
             </body>

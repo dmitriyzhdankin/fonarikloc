@@ -15,6 +15,20 @@ class shopFrontendAction extends waViewAction
         }
     }
 
+    public function addCanonical()
+    {
+        $get_vars = waRequest::get();
+        $ignore = array('page');
+        foreach ($ignore as $k) {
+            if (isset($get_vars[$k])) {
+                unset($get_vars[$k]);
+            }
+        }
+        if ($get_vars) {
+            $this->view->assign('canonical', wa()->getConfig()->getHostUrl().wa()->getConfig()->getRequestUrl(false, true));
+        }
+    }
+
     public function getStoreName()
     {
         $title = waRequest::param('title');
@@ -31,7 +45,10 @@ class shopFrontendAction extends waViewAction
     protected function setCollection(shopProductsCollection $collection)
     {
         $collection->setOptions(array('filters' => true));
-        $limit = $this->getConfig()->getOption('products_per_page');
+        $limit = (int)waRequest::cookie('products_per_page');
+        if (!$limit || $limit < 0 || $limit > 500) {
+            $limit = $this->getConfig()->getOption('products_per_page');
+        }
         $page = waRequest::get('page', 1, 'int');
         if ($page < 1) {
             $page = 1;
@@ -80,15 +97,28 @@ class shopFrontendAction extends waViewAction
          */
         $this->view->assign('frontend_nav', wa()->event('frontend_nav'));
 
+        // set globals
+        $params = waRequest::param();
+        foreach ($params as $k => $v) {
+            if (in_array($k, array('url', 'module', 'action', 'meta_keywords', 'meta_description', 'private',
+                'url_type', 'type_id', 'payment_id', 'shipping_id', 'currency', 'stock_id'))) {
+                unset($params[$k]);
+            }
+        }
+        $this->view->getHelper()->globals($params);
+
         try {
             return parent::display(false);
         } catch (waException $e) {
             if ($e->getCode() == 404) {
                 $url = $this->getConfig()->getRequestUrl(false, true);
-                if (substr($url, -1) !== '/' && substr($url, -9) !== 'index.php') {
-                    $this->redirect($url.'/');
+                if (substr($url, -1) !== '/' && strpos(substr($url, -5), '.') === false) {
+                    wa()->getResponse()->redirect($url.'/', 301);
                 }
             }
+            /**
+             * @event frontend_error
+             */
             wa()->event('frontend_error', $e);
             $this->view->assign('error_message', $e->getMessage());
             $code = $e->getCode();

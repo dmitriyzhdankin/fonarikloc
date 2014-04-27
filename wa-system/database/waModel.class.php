@@ -215,8 +215,6 @@ class waModel
         $this->cache_cleaners = array();
     }
 
-    protected $sql;
-
     /**
      * Execute SQL query
      *
@@ -286,12 +284,15 @@ class waModel
      * @param mixed $params
      * @return waDbResultDelete|waDbResultInsert|waDbResultReplace|waDbResultSelect|waDbResultUpdate
      */
-    public function query($sql, $params = null)
+    public function query($sql)
     {
-        if (func_num_args() > 2) {
-            $params = array_slice(func_get_args(), 1);
-        }
-        if ($params !== null) {
+        $n = func_num_args();
+        if ($n > 1) {
+            if ($n > 2) {
+                $params = array_slice(func_get_args(), 1);
+            } else {
+                $params = func_get_arg(1);
+            }
             if (!is_array($params)) {
                 $params = array($params);
             }

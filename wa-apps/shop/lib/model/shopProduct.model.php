@@ -16,16 +16,31 @@ class shopProductModel extends waModel
 
     protected $table = 'shop_product';
 
+    public function getByUrl($url, $category_id = null)
+    {
+        $sql = "SELECT p.* FROM ".$this->table." p";
+        if ($category_id) {
+            $sql .= " JOIN shop_category_products cp ON p.id = cp.product_id AND cp.category_id = ".(int)$category_id;
+        }
+        $sql .= " WHERE p.url = s:0 LIMIT 1";
+        return $this->query($sql, $url)->fetch();
+    }
+
     public function delete(array $product_ids)
     {
-        $delete_ids = array();
+        $type_model = new shopTypeModel();
+        $type_ids = array_keys($type_model->getTypes());
+        if (wa()->getEnv() !== 'cli') {
+            $delete_ids = $this->filterAllowedProductIds($product_ids);
+        } else {
+            $delete_ids = $product_ids;
+        }
 
         // remove files
-        foreach ($product_ids as $product_id) {
+        foreach ($delete_ids as $product_id) {
             try {
                 waFiles::delete(shopProduct::getPath($product_id, null, false));
                 waFiles::delete(shopProduct::getPath($product_id, null, true));
-                $delete_ids[] = (int) $product_id;
             } catch (waException $e) {
             }
         }
@@ -51,20 +66,20 @@ class shopProductModel extends waModel
             new shopProductServicesModel(),
             new shopProductSkusModel(),
             new shopProductStocksModel(),
+            new shopProductStocksLogModel(),
             new shopProductTagsModel(),
             new shopCategoryProductsModel(),
             new shopSetProductsModel(),
             new shopSearchIndexModel(),
             new shopProductFeaturesSelectableModel(),
-            new shopProductParamsModel()
+            new shopProductParamsModel(),
+            new shopCartItemsModel()
         ) as $model) {
             $model->deleteByProducts($delete_ids);
         }
 
-        $type_ids = array_keys($this->query("SELECT DISTINCT type_id FROM `{$this->table}` WHERE id IN(".implode(',', $delete_ids).")")->fetchAll('type_id'));
         // remove records
         if ($this->deleteById($delete_ids)) {
-            $type_model = new shopTypeModel();
             $type_model->recount($type_ids);
             return $delete_ids;
         }
@@ -122,7 +137,10 @@ class shopProductModel extends waModel
         $order = ($order == 'desc' || $order == 'DESC') ? 'DESC' : 'ASC';
 
         // get products ids
-        $sql = "SELECT id FROM {$this->table} ORDER BY count $order LIMIT ".(int) $offset.", ".(int) $count;
+        $sql = "SELECT id, IF(count IS NULL, 1, 0) count_null FROM {$this->table}
+        ORDER BY count_null $order, count $order
+        LIMIT ".(int) $offset.", ".(int) $count;
+
         $ids = array_keys($this->query($sql)->fetchAll('id'));
 
         return $this->getProductStocksByProductId($ids, $order);
@@ -281,12 +299,91 @@ class shopProductModel extends waModel
     }
 
     /**
+     * @param int $product
+     * @param int|null $category_id
+     * @return array
+     */
+    public function getStorefrontMap($product, $category_id = null)
+    {
+        $storefronts_map = array();
+
+        $product_id = (int) $product;
+        $category_product_model = new shopCategoryProductsModel();
+        $product_categories = $category_product_model->getByField('product_id', $product_id, 'category_id');
+        $product_type = $this->select('type_id')->where('id='.$product_id)->fetchField();
+
+        if (!$product_categories || !$product_type) {
+            return array();
+        }
+        
+        if ($category_id !== null) {
+            if (isset($product_categories[$category_id])) {
+                $product_categories = array($category_id => $product_categories[$category_id]);
+            } else {
+                return array();
+            }
+        }
+        $routing = wa()->getRouting();
+        $domain_routes = $routing->getByApp('shop');
+
+        $category_routes_model = new shopCategoryRoutesModel();
+        $category_routes = $category_routes_model->getRoutes(array_keys($product_categories));
+        foreach ($product_categories as $c_id => &$category) {
+            $category['routes'] = isset($category_routes[$c_id]) ? $category_routes[$c_id] : array();
+        }
+        unset($category);
+        
+        foreach ($product_categories as $c_id => $category) {
+            $storefronts_map[$c_id] = array();
+            foreach ($domain_routes as $domain => $routes) {
+                foreach ($routes as $r) {
+                    if (!empty($r['private'])) {
+                        continue;
+                    }
+                    
+                    if ((empty($r['type_id']) || (in_array($product_type, (array) $r['type_id']))) &&
+                        (!$category['routes'] || in_array($domain.'/'.$r['url'],$category['routes']))
+                    ) 
+                    {
+                        $routing->setRoute($r, $domain);
+                        $storefronts_map[$c_id][] = $routing->getUrl('shop/frontend', array(), true);
+                    }
+                }
+            }
+        }
+
+        $all_routes_count = 0;
+        foreach ($domain_routes as $domain => $routes) {
+            foreach ($routes as $r) {
+                if (!empty($r['private'])) {
+                    continue;
+                }
+                $all_routes_count += 1;
+            }
+        }
+        
+        foreach ($storefronts_map as $c_id => &$storefronts_list) {
+            if (count($storefronts_list) == $all_routes_count) {
+                $storefronts_list = array();
+            }
+        }
+        unset($storefronts_list);
+        
+        if ($category_id !== null) {
+            return $storefronts_map[$category_id];
+        } else {
+            return $storefronts_map;
+        }
+    }
+    
+    /**
      * Correct main category of products
      *
      * The key point: if main category of product is corrected it is does not affect
      *
      * @param null|int|array $product_ids  filter by product ID
      * @param null|int|array $category_ids filter by product.category_id
+     * @return bool|resource
      */
     public function correctMainCategory($product_ids = null, $category_ids = null)
     {
@@ -330,13 +427,18 @@ class shopProductModel extends waModel
 
     public function correctCount()
     {
-        // Repair this invariant:
-        // If sku.count IS NULL proper product.count must be NULL
-        $sql = "
-            UPDATE `shop_product` p
-            JOIN `shop_product_skus` s ON s.product_id = p.id
-            SET p.count = NULL
-            WHERE s.count IS NULL AND s.available = 1
+        // Repair: count of product == count of skus
+        $sql = "UPDATE shop_product p JOIN (
+            SELECT p.id, p.count, SUM(s.count) count_of_skus
+                FROM shop_product p 
+                JOIN shop_product_skus s ON s.product_id = p.id
+                WHERE s.available = 1
+                GROUP BY p.id
+                HAVING (count IS NOT NULL AND count_of_skus IS NOT NULL AND count != count_of_skus) OR 
+                    (count IS NOT NULL AND count_of_skus IS NULL) OR 
+                    (count IS NULL AND count_of_skus IS NOT NULL)
+            ) t ON p.id = t.id
+            SET p.count = count_of_skus
         ";
         $this->exec($sql);
 
@@ -347,7 +449,7 @@ class shopProductModel extends waModel
                 SELECT p.id, p.count, SUM(sk.available) all_sku_available
                 FROM shop_product p
                 JOIN shop_product_skus sk ON p.id = sk.product_id
-                WHERE p.count IS NULL || (p.count IS NOT NULL AND p.count != 0)
+                WHERE p.count IS NULL OR (p.count IS NOT NULL AND p.count != 0)
                 GROUP BY p.id
                 HAVING all_sku_available = 0
             ) r ON p.id = r.id
@@ -436,9 +538,9 @@ class shopProductModel extends waModel
 
         $sql = "SELECT
                     p.*,
-                    SUM(ps.price*pcur.rate*oi.quantity) AS sales,
-                    SUM(ps.purchase_price*pcur.rate*oi.quantity) AS purchase,
-                    SUM(ps.price*pcur.rate*oi.quantity - ps.purchase_price*pcur.rate*oi.quantity) AS profit
+                    SUM(oi.price*o.rate*oi.quantity) AS sales,
+                    SUM(IF(oi.purchase_price > 0, oi.purchase_price*o.rate, ps.purchase_price*pcur.rate)*oi.quantity) AS purchase,
+                    SUM(oi.price*o.rate*oi.quantity - IF(oi.purchase_price > 0, oi.purchase_price*o.rate, ps.purchase_price*pcur.rate)*oi.quantity) AS profit
                 FROM shop_order AS o
                     JOIN shop_order_items AS oi
                         ON oi.order_id=o.id
@@ -467,6 +569,34 @@ class shopProductModel extends waModel
     }
 
     /**
+     * Get product ids and leave only allowed by rights
+     *
+     * @param array $product_ids
+     * @return array
+     */
+    public function filterAllowedProductIds(array $product_ids)
+    {
+        if (wa('shop')->getUser()->getRights('shop', 'type.all')) {
+            return $product_ids;
+        }
+
+        $type_model = new shopTypeModel();
+        $types = $type_model->getTypes();
+        $type_ids = array_keys($types);
+
+        if (empty($product_ids) || empty($types)) {
+            return array();
+        }
+        $product_ids = array_keys($this->query("
+            SELECT id FROM `{$this->table}`
+            WHERE id IN(" . implode(',', $product_ids) . ")
+                AND type_id IN (" . implode(',', $type_ids) . ")"
+        )->fetchAll('id'));
+
+        return $product_ids;
+    }
+
+    /**
      * Check current user rights to product with its type id
      *
      * @param array|int $product
@@ -492,5 +622,98 @@ class shopProductModel extends waModel
             //throw new waException(_w("Unknown type"));
         }
         return (boolean) wa()->getUser()->getRights('shop', 'type.'.$type_id);
+    }
+
+    /**
+     * @param int $id
+     * @return bool
+     */
+    public function correct($id)
+    {
+        if (!$id) {
+            return false;
+        }
+        $id = (int) $id;
+        $product = $this->getById($id);
+
+        $product_skus_model = new shopProductSkusModel();
+        $skus = $product_skus_model->getDataByProductId($id, true);
+
+        $currency_model = new shopCurrencyModel();
+        $currency = wa('shop')->getConfig()->getCurrency();
+
+        $price = array();
+        $update_product_data = array();
+
+        // aggregate count by stocks for product
+        // Invariant: if at least one sku.count IS NULL this aggregate count IS NULL
+        $product_count = 0;
+
+        $available_sku_count = 0;
+        foreach ($skus as $sku) {
+            if ($sku['available']) {
+                $available_sku_count++;
+            }
+
+            $price[] = $this->castValue('double', $sku['price']);
+
+            $sku_count = 0;
+            $num_of_null = 0;
+            foreach ($sku['stock'] as $count) {
+                if ($count === null) {
+                    // turn into NULL and is not longer changing
+                    $sku_count = null;
+                    $num_of_null++;
+                } else {
+                    // Once turned into NULL value is not changed
+                    if ($sku_count !== null) {
+                        $sku_count += $count;
+                    }
+                }
+            }
+            if ($num_of_null == count($sku['stock'])) {
+                // all stock count is null means that not multistocking
+                $sku_count = $sku['count'];
+            }
+
+            // maintain product_count invariant. See above
+            if ($sku['available']) {
+                if ($sku_count === null) {
+                    $product_count = null;
+                } elseif ($product_count !== null) {
+                    $product_count += $sku_count;
+                }
+            }
+        }
+
+        if ($available_sku_count == 0) {
+            $product_count = 0;
+        }
+
+        if (!$price) {
+            $price[] = 0;
+        }
+        $update_product_data['sku_count'] = count($skus);
+        $update_product_data['min_price'] = $currency_model->convert(min($price), $product['currency'], $currency);
+        $update_product_data['max_price'] = $currency_model->convert(max($price), $product['currency'], $currency);
+        $update_product_data['price'] = $currency_model->convert(
+                $skus[$product['sku_id']]['price'],
+                $product['currency'],
+                $currency
+            );
+        if (isset($skus[$product['sku_id']]['compare_price'])) {
+            $update_product_data['compare_price'] =
+                $currency_model->convert(
+                    $skus[$product['sku_id']]['compare_price'],
+                    $product['currency'],
+                    $currency
+                );
+        }
+
+        $update_product_data['count'] = $product_count;
+
+        $this->updateById($product['id'], $update_product_data);
+
+        return true;
     }
 }

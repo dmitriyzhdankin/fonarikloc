@@ -93,7 +93,7 @@ function close_pop_up_1clk(box) {
        {$cart_total = $wa->shop->cart->total()}
        <p class="cart_head">В корзине: <span></span></p>
        <a class="cart_li" href="{$wa->getUrl('/frontend/cart')}" id="cart_count">{$wa->shop->cart->count()} товаров</a>
-       <p class="cart-total-container">На сумму: <span class="cart-total">{shop_currency($cart_total)}</span></p>
+       <p class="cart-total-container">На сумму: <span class="cart-total">{shop_currency($cart_total|ceil)}</span></p>
        <a class="cart_li_checkout" href="{$wa->getUrl('/frontend/checkout')}">Оформить заказ</a>
 </div>
 
@@ -106,7 +106,7 @@ function close_pop_up_1clk(box) {
     <div class="container_12">
       <div class="grid_12">
         <div class="primary">
-          <ul>{$wa_test}</ul>
+          <ul>{shopCustommenuPlugin::displayMenu(1)}</ul>
         </div><!-- .primary -->
       </div><!-- .grid_12 -->
     </div><!-- .container_12 -->
