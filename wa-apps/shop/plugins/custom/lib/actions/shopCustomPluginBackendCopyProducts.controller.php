@@ -49,7 +49,9 @@ class shopCustomPluginBackendCopyProductsController extends waJsonController
                 }
                 foreach($categories as $value) {
                     $categories_model->multipleInsert(array('product_id' => $product_id, 'category_id' => $value['category_id'], 'sort' => $value['sort'] ));
-                }   
+                    $categories_id[] = $value['category_id'];
+                }
+                $categories_model->add(array($product_id),$categories_id);
             }
         }
         

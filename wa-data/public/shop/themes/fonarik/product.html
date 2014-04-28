@@ -62,20 +62,20 @@ $(document).ready(function() {
             </div>
             <!-- gallery -->
             {if count($product.images) > 1}
-                <div class="tab_container">
+                <ul class="pagination clearfix" id="thumblist">
                     {foreach $product.images as $image}       
                         {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
                         {if $bigImage != $bImage }
-                                <a class="fancybox-button" rel="fancybox-button" href="{$bImage}">
+                                <li><a class="fancybox-button" rel="fancybox-button" href="{$bImage}">
                                         {$wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '96x96', ['itemprop' => 'image', 'alt' => $product.name])} 
-                                </a>
+                                </a></li>
                         {/if}
                     {/foreach}
-                </div>
-				<!--div class="next_prev">
+                </ul>
+				<div class="next_prev">
 					<a id="img_prev" class="arows" href="#"><span>Вперёд</span></a>
 					<a id="img_next" class="arows" href="#"><span>Назад</span></a>
-				</div--><!-- . -->
+				</div><!-- . -->
             {/if}
 		</div>
 		{else}

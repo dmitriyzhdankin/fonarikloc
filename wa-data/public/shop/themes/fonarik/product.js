@@ -50,6 +50,7 @@ $(function () {
     }
 
     $("#product-skus input[type=radio]").click(function () {
+        if(typeof sku_services == 'undefined' ) return false;
         if ($(this).data('image-id')) {
             $("#product-image-" + $(this).data('image-id')).click();
         }
