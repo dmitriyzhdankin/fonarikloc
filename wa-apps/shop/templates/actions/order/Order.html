@@ -120,7 +120,11 @@
                 {/if}
             </div>
         </div>
-    
+
+        <!-- plugin hook: 'backend_order.info_section' -->
+        {* @event backend_order.%plugin_id%.info_section *}
+        {if !empty($backend_order)}{foreach $backend_order as $_}{if (!empty($_.info_section))}<li>{$_.info_section}</li>{/if}{/foreach}{/if}
+
         <div class="clear-right"></div>
     
         <!-- order comment -->
@@ -161,12 +165,16 @@
         {/if}
     
         {if !empty($params.payment_name)}
-        <h3><span class="gray">[`Payment`] &mdash;</span> <strong>{$params.payment_name}</strong></h3>
-        {if $billing_address !== null}
-            <p class="s-order-address">
-                {$billing_address}
-            </p>
+            <h3><span class="gray">[`Payment`] &mdash;</span> <strong>{$params.payment_name}</strong></h3>
+            {if $billing_address !== null}
+                <p class="s-order-address">
+                    {$billing_address}
+                </p>
+            {/if}
         {/if}
+        
+        {if !empty($order.coupon)}
+            <h3><span class="gray">[`Discount`] </span> <strong>({$order.coupon.code})</strong></h3>
         {/if}
     
         <div class="clear-right"></div>

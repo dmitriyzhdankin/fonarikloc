@@ -22,11 +22,25 @@
                     <div class="profile image96px">
                         <div class="image">
                             <a href="#/apps/{$app.slug}{if !empty($app.edition)}.{$app.edition}{/if}/">
-                                <img src="{$app.icons.96}" alt="{$app.name|truncate:15|escape}">
+                                <div class="i-image-wrapper">
+                                    <img src="{$app.icons.96}" alt="{$app.name|truncate:15|escape}">
+                                    {if !empty($app.publish_datetime) && strtotime($app.publish_datetime) > $smarty.now - 86400*14}
+                                        <!-- NEW -->
+                                        <div class="i-badge new"><span>[`New!`]</span></div>
+                                    {elseif !empty($app.tags)}
+                                        {if in_array('featured', $app.tags)} 
+                                            <!-- FEATURED -->
+                                            <div class="i-badge featured"><i class="thumb-up"></i></div>
+                                        {elseif in_array('updated', $app.tags)} 
+                                            <!-- UPDATED -->
+                                            <div class="i-badge updated two-lines"><span>[`New version!`]</span></div>
+                                        {/if}
+                                    {/if}
+                                </div>
                             </a>
                         </div>
                         <div class="details">
-                            <h5><a href="#/apps/{$app.slug}{if !empty($app.edition)}.{$app.edition}{/if}/">{$app.name|truncate:15|escape}</a></h5>
+                            <h5><a href="#/apps/{$app.slug}{if !empty($app.edition)}.{$app.edition}{/if}/" data-href="#/apps%s/{$app.slug}{if !empty($app.edition)}.{$app.edition}{/if}/" class="js-item-link">{$app.name|truncate:15|escape}</a></h5>
                             {if $app.description}<p>{$app.description}</p>{/if}
                             {if empty($app.installed)}
                             

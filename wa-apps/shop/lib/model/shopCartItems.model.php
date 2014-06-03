@@ -69,7 +69,7 @@ class shopCartItemsModel extends waModel
                 $s['price'] = shop_currency($s['price'], $variants[$v_id]['currency'], $primary, false);
             }
 
-            $services_total += ceil($s['price']) * $s['quantity'];
+            $services_total += $s['price'] * $s['quantity'];
         }
 
         $total = $products_total + $services_total;

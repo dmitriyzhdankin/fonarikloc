@@ -1084,7 +1084,7 @@ class waInstaller
     private function rename($oldname, $newname)
     {
         $result = false;
-        if (@rename(self::$root_path.$oldname, self::$root_path.$newname) || sleep(3) || @rename(self::$root_path.$oldname, self::$root_path.$newname)) {
+        if (@rename(self::$root_path.$oldname, self::$root_path.$newname) || sleep(3) || @rename(self::$root_path.$oldname, self::$root_path.$newname) ) {
             $result = true;
             $this->writeLog(__METHOD__.' replace current version code', self::LOG_TRACE, compact('oldname', 'newname'));
         }

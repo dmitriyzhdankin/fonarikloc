@@ -13,6 +13,13 @@ class shopCustomPlugin extends shopPlugin {
             waSystem::getInstance()->getResponse()->addCss('wa-apps/shop/plugins/custom/css/custom_backend.css');
         }
     }
+    protected static function getThisPlugin() {
+        if (self::$plugin) {
+            return self::$plugin;
+        } else {
+            return wa()->getPlugin('custom');
+        }
+    }
     
     public function addBackendSettingsScript() {
 //        return array(
@@ -31,5 +38,11 @@ class shopCustomPlugin extends shopPlugin {
         
 //        $action = new shopCustomPluginBackendProductCategoriesAction();
         return array('toolbar_section' => '<div class="block"><div class="copy-products" data-action="copy"><a href="#"><i class="icon16 folders"></i>Copy products</a></div></div>');
+    }
+    
+    public static function getReviewsCount($product_id) {
+        $plugin = self::getThisPlugin();
+        $reviews_model = new shopProductReviewsModel();
+        return $reviews_model->count($product_id, false);
     }
 }

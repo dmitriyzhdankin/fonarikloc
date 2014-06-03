@@ -1,5 +1,5 @@
 <?php
-ini_set('max_execution_time', 600);
+
 $path = dirname(__FILE__).'/wa-config/SystemConfig.class.php';
 
 if (file_exists($path)) {
@@ -13,3 +13,20 @@ if (file_exists($path)) {
 		//404
 	}
 }
+//
+//$data = array();
+//function glob_recursive($dir, $mask,&$data){
+//    foreach(glob($dir.'/*') as $filename){
+//        if(strtolower(substr($filename, strlen($filename)-strlen($mask), strlen($mask)))==strtolower($mask)) {
+//            $data[] = $filename;
+//        }
+//        if(is_dir($filename)) glob_recursive($filename, $mask,$data);
+//    }
+//}
+//glob_recursive("wa-apps", "updates",$data);
+//foreach( $data as $up ) {
+//    glob_recursive($up, ".php", $updates);    
+//}
+//foreach($updates as $update) {
+//    require_once($update);
+//}

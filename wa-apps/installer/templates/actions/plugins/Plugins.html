@@ -44,7 +44,7 @@
                 <a href="#/plugins:top/" class="inline-link"><i class="icon16 star"></i><b><i><strong>[`Plugins`]</strong></i></b><span class="hint"></span> <i class="icon10 darr"></i></a>
 
                 <ul class="menu-v with-icons">
-
+                    {if !empty($apps)}
                     {foreach $apps as $app_id => $app}
                         {if !empty($app.installed)}
                             {assign var=app_id value=$app.slug}
@@ -55,13 +55,13 @@
                                 </a>
                             </li>
                         {/if}
-                    {foreachelse}
+                    {/foreach}
+                    {else}
                         <li>
                             <br /><br />
                             <p class="hint align-center">[`No plugin enabled apps are installed.`]</p>
                         </li>
-                    {/foreach}
-
+                    {/if}
                 </ul>
 
             </li>
@@ -73,16 +73,37 @@
 
     <ul class="thumbs">
     {if !empty($slug)}
+    {$sort = -1000}{$_plugins=[]}
     {foreach $slug as $key}
         {foreach $apps[$key]['plugins'] as $plugin_id => $plugin}
-        <li{if !empty($plugin.installed)} class="i-installed"{/if}>
+        {if !isset($plugin.sort)}{$sort = $sort+1}{$plugin.sort=$sort}{/if}
+        {$_sort=$plugin.sort}
+
+        {capture assign="_plugin"}
+        <li{if !empty($plugin.installed)} class="i-installed"{/if} data-sort="{$_sort}">
             {$app = $apps[$key]}
             <a href="#/plugins/{$app['slug']}/{$plugin_id}/" data-href="#/plugins%s/{$app['slug']}/{$plugin_id}/" class="js-item-link">
-                <!-- cover -->
-                <img src="{$plugin.icon}">
+                <div class="i-image-wrapper">
+                    <!-- cover -->
+                    <img src="{$plugin.icon}">
 
-                <!-- name & author -->
-                <h5>{$plugin.name|default:$plugin_id|escape|truncate:29}</h5>
+                    <!-- name & author -->
+                    <h5>{$plugin.name|default:$plugin_id|escape|truncate:29}</h5>
+
+                    {if !empty($plugin.publish_datetime) && strtotime($plugin.publish_datetime) > $smarty.now - 86400*14}
+                        <!-- NEW -->
+                        <div class="i-badge new"><span>[`New!`]</span></div>
+                    {elseif !empty($plugin.tags)}
+                        {if in_array('featured', $plugin.tags)} 
+                            <!-- FEATURED -->
+                            <div class="i-badge featured"><i class="thumb-up"></i></div>
+                        {elseif in_array('updated', $plugin.tags)} 
+                            <!-- UPDATED -->
+                            <div class="i-badge updated two-lines"><span>[`New version!`]</span></div>
+                        {/if}
+                    {/if}
+                    
+                </div>
             </a>
             
             {if $plugin.description}<p>{$plugin.description}</p>{/if}
@@ -114,11 +135,18 @@
             {/if}
             
         </li>
+            {/capture}
+            {$_plugins[$_sort]=$_plugin}
       {/foreach}
     {/foreach}
      {else}
         <p class="align-center gray"><br>[`No plugins were found.`]</p>
      {/if}
+        {if !empty($_plugins)}
+        <!-- {ksort($_plugins)} -->
+
+        {implode("",$_plugins)}
+        {/if}
      </ul>
     <div class="clear"></div>
 

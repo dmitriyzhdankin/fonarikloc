@@ -3,3 +3,5 @@ wa-cache/
 wa-config/
 wa-log/
 wa-data/protected/wa-installer/
+wa-data/public/shop/products/
+wa-data/protected/shop/products/

@@ -490,7 +490,7 @@ $.layout = {
         $container.find(id).show();
     },
     blurTab: function (path) {
-        this.path.tab = path.tab = false;
+        this.path.tab = false;
         this.loadTab(path);
     },
     blurItem: function (path) {

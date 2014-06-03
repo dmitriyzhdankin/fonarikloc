@@ -48,7 +48,7 @@
             <td width="{$td_width}%">
                 <a href="{$wa->getUrl('/frontend/product/', ['product_url' => $p.url])}" class="no-underline">
                     {$wa->shop->productImgHtml($p, '96x96', ['itemprop' => 'image', 'id' => 'product-image', 'default' => "`$wa_theme_url`img/dummy96.png", 'title' => $p.name|cat:' ':strip_tags($p.summary)|escape])}
-                    <u>{$p.name|escape}</u>
+                    <br /><u>{$p.name|escape}</u>
                 </a>
                 {if count($products) > 2}
                     <br><br>

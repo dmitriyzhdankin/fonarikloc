@@ -9,15 +9,26 @@ $(document).ready(function() {
     $(".fancybox-button").fancybox({
         prevEffect	: 'none',
         nextEffect	: 'none',
-		helpers	: {
-			title	: {
-				type: 'outside'
-			},
-			thumbs	: {
-				width	: 50,
-				height	: 50
-			}
-		}
+        beforeLoad: function () {
+            var el, id = $(this.element).data('title-id');
+
+            if (id) {
+                el = $('#' + id);
+
+                if (el.length) {
+                    this.title = el.html();
+                }
+            }
+        },
+        helpers	: {
+                title	: {
+                        type: 'outside'
+                },
+                thumbs	: {
+                        width	: 50,
+                        height	: 50
+                }
+        }
     });
 });
 </script>{/literal}
@@ -54,8 +65,8 @@ $(document).ready(function() {
 				{$bigImage =  $wa->shop->getProductImgHtml($product, '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}                
 				<div class="preview slides_container">
 					<div class="prev_bg">
-                                            <a href="{$bigImage}" class="fancybox-button" rel="fancybox-button">
-                                                {$wa->shop->getProductImgHtml($product, '200x200', ['itemprop' => 'image', 'id' => 'product-image', 'title' => $product.name|escape|cat:' ':strip_tags($product.summary)|escape, 'alt' => $product.name])}
+                                            <a href="{$bigImage}" class="fancybox-button" rel="fancybox-button" data-title-id="add_to_cart_popup">
+                                                {$wa->shop->getProductImgHtml($product, '290x290', ['itemprop' => 'image', 'id' => 'product-image', 'title' => $product.name|escape|cat:' ':strip_tags($product.summary)|escape, 'alt' => $product.name])}
                                             </a>
 					</div>
 				</div>
@@ -66,7 +77,7 @@ $(document).ready(function() {
                     {foreach $product.images as $image}       
                         {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
                         {if $bigImage != $bImage }
-                                <li><a class="fancybox-button" rel="fancybox-button" href="{$bImage}">
+                                <li><a class="fancybox-button" rel="fancybox-button" href="{$bImage}" data-title-id="add_to_cart_popup">
                                         {$wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '96x96', ['itemprop' => 'image', 'alt' => $product.name])} 
                                 </a></li>
                         {/if}
@@ -176,10 +187,11 @@ $(document).ready(function() {
 						</ul>
 						{literal}<script>
 	$("#product-skus input").click(function () {
-	var sku_id = $(this).val();
-	var sku_image = $(this).attr('data-image-id'); 
-	var sku_sku = $(this).attr('data-sku'); 
-	$('#product_sku').html(sku_sku);               
+            var sku_id = $(this).val();
+            var sku_image = $(this).attr('data-image-id'); 
+            var sku_sku = $(this).attr('data-sku'); 
+            $('#product_sku').html(sku_sku);
+            $(".sku_id_fancybox").val(sku_id);
 	});
 	$("#product-skus input:radio:checked").click();
 </script>{/literal}
@@ -280,7 +292,7 @@ $(document).ready(function() {
 						<table class="features" id="fullproduct-features" >
 							{foreach $product.features as $f_code => $f_value}
 								<tr>
-									<td class="bg">
+									<td>
 										{$features[$f_code].name}
 									</td>
 									<td>
@@ -330,7 +342,7 @@ $(document).ready(function() {
 						<table class="features" id="product-features">
 							{foreach $product.features as $f_code => $f_value}
 								<tr>
-									<td class="bg">
+									<td>
 										{$features[$f_code].name}
 									</td>
 									<td >
@@ -352,7 +364,8 @@ $(document).ready(function() {
 							</div>
 						{/foreach}
 					{/if}
-					<div class="reviews">
+					<div class="clear"></div>
+                                        <div class="reviews" id="reviews">
 						<h4>{sprintf('[`%s reviews`]', $product.name)}</h4>
 						<ul class="comments">
 							{foreach $reviews as $review}
@@ -375,7 +388,7 @@ $(document).ready(function() {
       <div class="clear"></div>
       {$upselling = $product->upSelling()}
         {if $upselling}
-			<div class="related" style="margin-bottom:25px;">
+			<div class="related" style="margin:25px 0;">
 				<div class="c_header" style="margin-bottom:20px;">
 					<div class="grid_7">
 						<h2>Полезные вещи для туриста
@@ -384,8 +397,8 @@ $(document).ready(function() {
 						</h2>
 					</div><!-- .grid_7 -->
 					<div class="grid_2">
-						<a id="next_c1" class="next_arrow next arows" href="#"><span>Вперёд</span></a>
-						<a id="prev_c1" class="prev_arrow prev arows" href="#"><span>Назад</span></a>
+						<a id="next_c1" class="next arows" href="#"><span>Вперёд</span></a>
+						<a id="prev_c1" class="prev arows" href="#"><span>Назад</span></a>
 					</div><!-- .grid_2 -->
 				</div><!-- .c_header -->
 				<div class="list_carousel">
@@ -399,3 +412,16 @@ $(document).ready(function() {
     </div>
 </div>
 <div class="clear"></div>
+<div id="add_to_cart_popup" class="hidden">
+    <form method="post" action="{$wa->getUrl('/frontendCart/add')}" class="addtocart">
+        <div class="cart">
+            <input onclick="$.fancybox.close(); open_pop_up('#onclick_buy');" type="submit" {if $product.price eq 0 or !$product_available }disabled="disabled" style="background:#CCC;"{/if} value="Купить" class="bay 8" />               
+            <input type="hidden" name="quantity" class="number" value="1">                
+            <input type="hidden" value="" class="sku_id_fancybox" name="sku_id">
+            <div class="price">
+                <div class="price_new" itemprop="price" value="{shop_currency($product.price|ceil)}">{shop_currency($product.price|ceil)}</div>
+                {if $product.compare_price > 0 }<div class="price_old">{shop_currency($product.compare_price|ceil)}</div>{/if}
+            </div>
+        </div>
+    </form>
+</div>

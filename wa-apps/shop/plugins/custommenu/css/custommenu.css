@@ -276,6 +276,7 @@
 }
 
 #block_nav_primary .grid_12.show {
+    border: none;
     overflow: visible;
     padding-left: 0;
     padding-right: 0;  

@@ -284,7 +284,7 @@
     <div class="content">
 
         <div class="i-breadcrumbs">
-            <a href="#/plugins/">[`All plugins`]</a>
+            <a href="#/plugins/{$plugin.app}/">[`All plugins`]</a>
             {if !empty($plugin.vendor)} &raquo; <a href="#/plugins&vendor={$plugin.vendor}/" data-href="#/plugins%s&vendor={$plugin.vendor}/%s/" data-filter="vendor" class="js-item-link">{$plugin.vendor_name|escape}</a>{/if}
         </div>
 

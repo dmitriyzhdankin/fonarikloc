@@ -27,6 +27,8 @@
  * @property float $price
  * @property float $compare_price
  * @property float $base_price_selectable
+ * @property float $compare_price_selectable
+ * @property float $purchase_price_selectable
  * @property string $currency
  * @property float $min_price
  * @property float $max_price
@@ -40,7 +42,9 @@
  * @example
  * // read product feature
  * $product->features['feature_code'];
+ * @property array $features_selectable
  * @property array $skus
+ * @property-read int $sku_count
  * @property array $categories
  * @property array $tags
  * @property array $params
@@ -72,11 +76,12 @@ class shopProduct implements ArrayAccess
     {
         if (!self::$data_storages) {
             self::$data_storages = array(
-                'tags'       => true,
-                'features'   => true,
-                'skus'       => true,
-                'params'     => true,
-                'categories' => 'shopCategoryProductsModel'
+                'tags'                => true,
+                'features_selectable' => 'shopProductFeaturesSelectableModel', //should be before skus
+                'skus'                => true, //should be before features
+                'features'            => true,
+                'params'              => true,
+                'categories'          => 'shopCategoryProductsModel'
             );
         }
         if (isset(self::$data_storages[$key])) {
@@ -232,10 +237,10 @@ class shopProduct implements ArrayAccess
          * Handle product entry save
          * @event product_save
          *
-         * @param array[string]mixed $params
-         * @param array[string][string]mixed $params['data'] raw product data fields (see shop_product table description and related storages)
-         * @param array[string][string]int $data['data']['id'] product ID
-         * @param array[string]shopProduct $params['instance'] current shopProduct entry instance (avoid recursion)
+         * @param array [string]mixed $params
+         * @param array [string][string]mixed $params['data'] raw product data fields (see shop_product table description and related storages)
+         * @param array [string][string]int $data['data']['id'] product ID
+         * @param array [string]shopProduct $params['instance'] current shopProduct entry instance (avoid recursion)
          * @return void
          */
         wa()->event('product_save', $params);
@@ -244,9 +249,29 @@ class shopProduct implements ArrayAccess
 
     protected function saveData(&$errors = array())
     {
-        foreach ($this->is_dirty as $field => $v) {
-            if ($storage = $this->getStorage($field)) {
-                $this->data[$field] = $storage->setData($this, $this->data[$field]);
+        #fix empty SKUs
+        if (!$this->sku_count && empty($this->is_dirty) && empty($this->data['skus'])) {
+            $this->setData('skus', array(
+                -1 => array(
+                    'name' => '',
+                )
+            ));
+        }
+        if ($this->is_dirty) {
+            $this->getStorage(null);
+            //save external data in right storage order
+            foreach (array_keys(self::$data_storages) as $field) {
+                if (($field == 'skus') && !$this->sku_count && empty($this->is_dirty[$field]) && empty($this->data['skus'])) {
+                    #fix empty SKUs on missed virtual SKUs
+                    $this->setData('skus', array(
+                        -1 => array(
+                            'name' => '',
+                        )
+                    ));
+                }
+                if (!empty($this->is_dirty[$field]) && ($storage = $this->getStorage($field))) {
+                    $this->data[$field] = $storage->setData($this, $raw = $this->data[$field]);
+                }
             }
         }
     }
@@ -316,6 +341,7 @@ class shopProduct implements ArrayAccess
     {
         return isset($this->data[$offset]) || $this->model->fieldExists($offset) || $this->getStorage($offset);
     }
+
     /**
      * Offset to retrieve
      * @link http://php.net/manual/en/arrayaccess.offsetget.php
@@ -440,10 +466,11 @@ class shopProduct implements ArrayAccess
             return $collection->getProducts('*', $limit);
         }
     }
-    
+
     /**
-     * 
+     *
      * @param double $rate Number of sold products in one day
+     * @return array
      */
     public function getRunout($rate)
     {
@@ -470,11 +497,11 @@ class shopProduct implements ArrayAccess
                         $sku_runout[$sku_id]['stock'][$stock_id]['date'] = date('Y-m-d', strtotime("+{$days} days"));
                     }
                 }
-            }  
+            }
         }
         return array(
             'product' => $runout,
-            'sku' => $sku_runout
+            'sku'     => $sku_runout
         );
     }
 

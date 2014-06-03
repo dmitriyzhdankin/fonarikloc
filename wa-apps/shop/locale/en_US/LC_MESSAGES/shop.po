@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 1.6.3\n"
 "Plural-Forms: nplurals=2; plural=n == 1 ? 0 : 1;\n"
 "Language: en_US\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -302,7 +302,7 @@ msgstr ""
 #: /wa-apps/shop/templates/actions/settings/SettingsStock.html:3
 #: /wa-apps/shop/templates/actions/settings/SettingsStock.html:175
 msgid "Stocking"
-msgstr ""
+msgstr "Stocks"
 
 #: /wa-apps/shop/templates/actions/backend/BackendSettings.html:40
 #: /wa-apps/shop/templates/actions/settings/SettingsSearch.html:2
@@ -974,7 +974,7 @@ msgid ""
 msgstr ""
 
 #: /wa-apps/shop/templates/actions/csv/CsvProductsetup.html:221
-msgid "Categories will not be exported"
+msgid "Product categories will not be exported"
 msgstr ""
 
 #: /wa-apps/shop/templates/actions/csv/CsvProductsetup.html:231
@@ -8893,4 +8893,377 @@ msgstr ""
 
 #: /wa-apps/shop/lib/workflow/shopWorkflowPayAction.class.php:82
 msgid "Order %s was paid"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.export.html:69
+msgid ""
+"Certain symbols (such as %s) may be ommitted when exporting with the "
+"selected encoding. Consider using UTF-8 encoding for safe export and import."
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:150
+msgid "Stock level for products with selectable features defined as <{ … }>"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:154
+msgid "Equally distribute stock levels among all SKUs of this product"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:156
+msgid ""
+"(e.g. if 24 is set as stock level for the entire product in CSV file, and "
+"there are 8 SKUs to be imported, every SKU will be set 3 as stock count; the "
+"overall product stock level will be set to 8 &times; 3 = 24)"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:162
+msgid "Set provided stock count for all imported SKUs"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:164
+msgid ""
+"(e.g. if 24 is set as stock level for the entire product in CSV file, and "
+"there are 8 SKUs, every SKU will be set 24 as stock count, and thus the "
+"overall product stock level will be set to 8 &times 24 = 192)"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:170
+msgid "Don’t import stock information for such SKUs"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:182
+msgid "Column assignment map"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:197
+msgid "Upload and assign columns"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:198
+msgid "Review settings"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:214
+msgid "Review import settings"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/csv/CsvProductsetup.import.html:232
+msgid "Gathering information from the file..."
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/settings/SettingsGeneral.html:133
+msgid "For details <a href=\"%s\" target=\"_blank\">see documentation</a>."
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/settings/SettingsGeneral.html:133
+msgid "http://www.webasyst.com/help/1061/shop-script-5-sms-setup/"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/settings/SettingsImages.html:144
+msgid "@2x image thumbnail generation"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/settings/SettingsImages.html:147
+msgid "Automatic @2x image thumbnail generation (recommended)"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/settings/SettingsImages.html:149
+msgid ""
+"Enabling this option will allow automatic creation of image thumbnails on-"
+"fly for devices with high pixel density displays, e.g. Retina displays. "
+"Generating bigger images require more memory resources for image generation, "
+"requires more disk space for storing images, but significantly improves user "
+"experience on devices with high-end displays"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/settings/SettingsImages.html:154
+msgid "Thumbnail quality @2x"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/settings/SettingsImages.html:158
+msgid ""
+"JPEG compression quality for photo thumbnails. From 0 (min quality, min file "
+"size) to 100 (max quality, max file size). 70 is recommended."
+msgstr ""
+
+#: /wa-apps/shop/js/csv/csvproduct.js:580
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductview.controller.php:31
+msgid "Collision at rows #"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:1533
+msgid ""
+"The following information were gathered from the CSV file and is ready to be "
+"imported:"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:1535
+msgid "Import completed!"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:1538
+msgid "Export completed!"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:1546
+msgid "Total import time: <strong>%s</strong>"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:1551
+msgid ""
+"If estimation appears to be not valid, alter column assignment table and "
+"primary columns and review settings again."
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductupload.controller.php:133
+msgid "Add to existing"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductupload.controller.php:134
+msgid "Add as new feature"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductview.controller.php:64
+msgid "Will be imported as category"
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductview.controller.php:68
+msgid "Will be imported as product"
+msgstr ""
+
+#: /wa-apps/shop/lib/classes/shopCsvReader.class.php:751
+msgid "Previewing %s of %s rows"
+msgstr ""
+
+#: /wa-apps/shop/lib/classes/shopCsvReader.class.php:754
+msgid "Load more..."
+msgstr ""
+
+#: /wa-apps/shop/lib/config/data/dimension.php:218
+msgid "months"
+msgstr ""
+
+#: /wa-apps/shop/lib/config/data/dimension.php:222
+msgid "years"
+msgstr ""
+
+#: /wa-apps/shop/themes/ascetic/product.cart.html:80
+#: /wa-apps/shop/themes/ascetic/product.cart.html:82
+#: /wa-apps/shop/themes/clear/product.cart.html:90
+#: /wa-apps/shop/themes/clear/product.cart.html:92
+#: /wa-apps/shop/themes/custom/product.cart.html:81
+#: /wa-apps/shop/themes/custom/product.cart.html:83
+#: /wa-apps/shop/themes/default/product.cart.html:81
+#: /wa-apps/shop/themes/default/product.cart.html:83
+#: /wa-apps/shop/themes/facebook/product.cart.html:77
+#: /wa-apps/shop/themes/facebook/product.cart.html:79
+#: /wa-apps/shop/themes/nifty/product.cart.html:82
+#: /wa-apps/shop/themes/nifty/product.cart.html:84
+#: /wa-apps/shop/themes/pinboard/product.cart.html:82
+#: /wa-apps/shop/themes/pinboard/product.cart.html:84
+#: /wa-apps/shop/themes/sidebar/product.cart.html:90
+#: /wa-apps/shop/themes/sidebar/product.cart.html:92
+#: /wa-apps/shop/themes/vk/product.cart.html:77
+#: /wa-apps/shop/themes/vk/product.cart.html:79
+msgid "Only %d left in stock"
+msgid_plural "Only %d left in stock"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/themes/ascetic/product.html:163
+#: /wa-apps/shop/themes/clear/product.html:157
+#: /wa-apps/shop/themes/custom/product.html:163
+#: /wa-apps/shop/themes/default/product.html:168
+#: /wa-apps/shop/themes/facebook/product.html:169
+#: /wa-apps/shop/themes/nifty/product.html:168
+#: /wa-apps/shop/themes/pinboard/product.html:169
+#: /wa-apps/shop/themes/sidebar/product.html:157
+#: /wa-apps/shop/themes/vk/product.html:168
+msgid "Read <a href=\"%s\">all %d review</a> on %s"
+msgid_plural "Read <a href=\"%s\">all %d reviews</a> on %s"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/themes/default/main.html:18
+msgid "Shop by category"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions-mobile/orders/Orders.html:8
+msgid "You don't have enough access permissions to view order list."
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/backend/BackendImportexport.html:41
+msgid "Browse import/export plugins"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/order/OrderEdit.html:176
+msgid "SKU %s no longer exists for this product"
+msgstr ""
+
+#: /wa-apps/shop/templates/actions/plugins/Plugins.html:45
+msgid "No plugins are installed."
+msgstr ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:442
+msgid "%d new category to be added"
+msgid_plural "%d new categories to be added"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:445
+msgid "%d new product to be added"
+msgid_plural "%d new products to be added"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:448
+msgid "%d new SKU to be added"
+msgid_plural "%d new SKUs to be added"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:455
+msgid "%d category to be updated"
+msgid_plural "%d categories to be updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:458
+msgid "%d product to be updated"
+msgid_plural "%d products to be updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:461
+msgid "%d SKU to be updated"
+msgid_plural "%d SKUs to be updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:467
+msgid "Excessive declaration for a category on %d line"
+msgid_plural "Excessive declaration for a category on %d lines"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:470
+msgid "Excessive declaration for a product on %d line"
+msgid_plural "Excessive declaration for a product on %d lines"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:473
+msgid "Excessive declaration for a SKU on %d line"
+msgid_plural "Excessive declaration for a SKU on %d lines"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:479
+msgid "Added %d category"
+msgid_plural "Added %d categories"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:482
+msgid "Added %d product"
+msgid_plural "Added %d products"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:488
+msgid "Linked %d product image"
+msgid_plural "Linked %d product images"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:495
+msgid "Updated %d category"
+msgid_plural "Updated %d categories"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:498
+msgid "Updated %d product"
+msgid_plural "Updated %d products"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:501
+msgid "Updated %d SKU"
+msgid_plural "Updated %d SKUs"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:504
+msgid "Updated %d product image"
+msgid_plural "Updated %d product images"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:510
+msgid "Ambiguous identification conditions for %d category"
+msgid_plural "Ambiguous identification conditions for %d categories"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:513
+msgid "Ambiguous identification conditions for %d product"
+msgid_plural "Ambiguous identification conditions for %d products"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:516
+msgid "Ambiguous identification conditions for %d SKU"
+msgid_plural "Ambiguous identification conditions for %d SKUs"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:519
+msgid "Ambiguous identification conditions for %d product image"
+msgid_plural "Ambiguous identification conditions for %d product images"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:525
+msgid ""
+"%d product record was not updated due to insufficient access rights for you "
+"as Webasyst user"
+msgid_plural ""
+"%d product records were not updated due to insufficient access rights for "
+"you as Webasyst user"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:531
+msgid "%d product has unknown currency"
+msgid_plural "%d products have unknown currency"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:537
+msgid "%d category imported with errors"
+msgid_plural "%d categories imported with errors"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:543
+msgid "%d category"
+msgid_plural "%d categories"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:549
+msgid "%d SKU"
+msgid_plural "%d SKUs"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:552
+msgid "%d product image"
+msgid_plural "%d product images"
+msgstr[0] ""
+msgstr[1] ""
+
+#: /wa-apps/shop/lib/actions/csv/shopCsvProductrun.controller.php:1574
+msgid "Total export time: <strong>%s</strong>"
 msgstr ""

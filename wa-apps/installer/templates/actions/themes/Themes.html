@@ -43,6 +43,7 @@
                     </li>
 
                     <!-- list all installed apps -->
+                    {if !empty($apps)}
                     {foreach $apps as $app_id => $app}
                         {if !empty($app.installed) && $app.enabled} {assign var=app_id value=$app.slug}
                             <li {if isset($slug)&&$slug==$app.slug && (!isset($vendor) || $vendor==$app.vendor)}class="selected"{/if}>
@@ -55,12 +56,13 @@
                                 </a>
                             </li>
                          {/if}
-                    {foreachelse}
+                    {/foreach}
+                    {else}
                         <li>
                             <br /><br />
                             <p class="align-center hint">[`No design theme enabled apps installed.`]</p>
                         </li>
-                    {/foreach}
+                    {/if}
                 </ul>
 
             </li>
@@ -85,6 +87,18 @@
                         <div class="i-lifted-corners">
                             <img src="{$theme.icon|default:'/wa-apps/installer/img/_theme_cover.png'}">
                         </div>
+                        {if !empty($theme.publish_datetime) && strtotime($theme.publish_datetime) > $smarty.now - 86400*14}
+                            <!-- NEW -->
+                            <div class="i-badge new"><span>[`New!`]</span></div>
+                        {elseif !empty($theme.tags)}
+                            {if in_array('featured', $theme.tags)}
+                                <!-- FEATURED -->
+                                <div class="i-badge featured"><i class="thumb-up"></i></div>
+                            {elseif in_array('updated', $theme.tags)} 
+                                <!-- UPDATED -->
+                                <div class="i-badge updated two-lines"><span>[`New version!`]</span></div>
+                            {/if}
+                        {/if}
                     </div>
 
                     <!-- name & author -->
