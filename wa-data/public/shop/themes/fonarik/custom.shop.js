@@ -1,7 +1,7 @@
 $(document).ready(function () {
 
   
-    $("form.addtocart").submit(function () {
+   $(document).on('submit','form.addtocart',function(){
         var f = $(this);
         $.post(f.attr('action'), f.serialize(), function (response) {
             if (response.status == 'ok') {

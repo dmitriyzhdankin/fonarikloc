@@ -32,6 +32,9 @@ class shopCustomPluginBackendCopyProductsController extends waJsonController
                 'status' => 0,
                 'type_id' => $product['type_id'],
                 'category_id' => $product['category_id'],
+                'skus' => array( 
+                    array('available' => 1)
+                )
             ); 
             
             $new_product = new shopProduct();

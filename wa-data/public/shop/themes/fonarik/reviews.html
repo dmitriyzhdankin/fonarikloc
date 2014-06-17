@@ -19,7 +19,7 @@
 </aside>
     {include file="sidebar.html"}
 </div><!-- .sidebar -->
-<div id="content" class="grid_9">
+<div id="content" class="grid_9 content">
 
 {$wa->title(sprintf('[`%s reviews`]', $product.name))}
 <h1>{sprintf('[`%s reviews`]', $product.name|escape)}</h1>
@@ -197,9 +197,10 @@
                 {/if}
                 
                 </div>
-            </form>
             <div class="clear"></div>
         </div>
       
     </div><!-- reviews end -->
+    </form>
+</div>
 </div>

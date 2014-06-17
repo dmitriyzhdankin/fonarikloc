@@ -417,7 +417,7 @@ $(document).ready(function() {
         <div class="cart">
             <input onclick="$.fancybox.close(); open_pop_up('#onclick_buy');" type="submit" {if $product.price eq 0 or !$product_available }disabled="disabled" style="background:#CCC;"{/if} value="Купить" class="bay 8" />               
             <input type="hidden" name="quantity" class="number" value="1">                
-            <input type="hidden" value="" class="sku_id_fancybox" name="sku_id">
+            <input type="hidden" value="{$product.sku_id}" class="sku_id_fancybox" name="sku_id">
             <div class="price">
                 <div class="price_new" itemprop="price" value="{shop_currency($product.price|ceil)}">{shop_currency($product.price|ceil)}</div>
                 {if $product.compare_price > 0 }<div class="price_old">{shop_currency($product.compare_price|ceil)}</div>{/if}

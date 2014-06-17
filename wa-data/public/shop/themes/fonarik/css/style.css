@@ -2261,6 +2261,30 @@ z-index: 98;
 	width: 172px;
 	font:bold 14px/27px Segoeui-Bold, Arial, Verdana, serif;
 }
+#product-reivew-form ul.menu-h.auth-type {
+    list-style: none;
+    padding-bottom: 20px;
+}
+.reviews ul.menu-h.auth-type li {
+    display: inline-block;
+    list-style: none outside none;
+    padding: 0 10px 0 0;
+}
+.reviews ul.menu-h.auth-type li a {
+    padding: 5px 6px;
+}
+.review-form ul.menu-h.auth-type li a img {
+    float: left;
+    margin-right: 3px;
+    position: relative;
+    top: 2px;
+}
+#content ul.comments li ul.comments li {
+    padding-left: 35px;
+}
+#content ul.comments ul.menu-v {
+    list-style: none outside none;
+}
 /*** Related Products ***/
 .related .c_header {
 	height: 30px;
