@@ -29,18 +29,15 @@ $(document).ready(function() {
                         height	: 50
                 }
         }
-    });
+    });    
 });
 </script>{/literal}
 <div id="sidebar" class="grid_3">
 	<div class="aside">
 		<div class="left_menu">
 			<ul class="menu-h">
-				<li>
-					<a href="{$wa->shop->productUrl($product, 'reviews')}">[`Reviews`]</a> <span class="hint" itemprop="reviewCount">{count($product.reviews)}</span>
-				</li>
 				{foreach $product.pages as $p}
-				<li{if $page.id == $p.id} class="current"{/if}>
+				<li{if isset($page) && $page.id == $p.id} class="current"{/if}>
 					<a href="{$wa->shop->productUrl($product, 'page', ['page_url' => $p.url])}">{$p.name|escape}</a>
 				</li>
 				{/foreach}
@@ -62,7 +59,7 @@ $(document).ready(function() {
                                 {if $badge_html}
                                     <div class="corner top right">{$badge_html}</div>
                                 {/if}
-				{$bigImage =  $wa->shop->getProductImgHtml($product, '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}                
+				{$bigImage =  $wa->shop->getProductImgHtml($product, '1000x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
 				<div class="preview slides_container">
 					<div class="prev_bg">
                                             <a href="{$bigImage}" class="fancybox-button" rel="fancybox-button" data-title-id="add_to_cart_popup">
@@ -75,7 +72,7 @@ $(document).ready(function() {
             {if count($product.images) > 1}
                 <ul class="pagination clearfix" id="thumblist">
                     {foreach $product.images as $image}       
-                        {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
+                        {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '1000x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
                         {if $bigImage != $bImage }
                                 <li><a class="fancybox-button" rel="fancybox-button" href="{$bImage}" data-title-id="add_to_cart_popup">
                                         {$wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '96x96', ['itemprop' => 'image', 'alt' => $product.name])} 
@@ -274,141 +271,86 @@ $(document).ready(function() {
 			</div>
 		</div>
       <div class="clear"></div>
-		<div class="grid_9" >
-			<div id="wrapper_tab" class="tab1">
-				<a href="#" class="tab5 tab_link">Описание</a>
-				<a href="#" class="tab2 tab_link">Характеристики</a>
-				{if count($product.images) > 1}<a href="#" class="tab3 tab_link">Фото</a>{/if}
-				<a href="#" class="tab4 tab_link">Отзывы {if $reviews_total_count}({$reviews_total_count}){/if}</a>
-				<a href="#" class="tab1 tab_link">Всё</a>
-				<div class="clear"></div>
-				<div class="tab5 tab_body">
-					{if $product.description}
-						<div class="description" id="product-fulldescription" itemprop="description">{$product.description}</div>
-					{/if}
-				</div>
-				<div class="tab2 tab_body">
-					{if $product.features}
-						<table class="features" id="fullproduct-features" >
-							{foreach $product.features as $f_code => $f_value}
-								<tr>
-									<td>
-										{$features[$f_code].name}
-									</td>
-									<td>
-										{if is_array($f_value)}
-											{implode(', ', $f_value)}
-										{else}
-											{$f_value}
-										{/if}
-									</td>
-								</tr>
-							{/foreach}
-						</table>
-					{/if}
-				</div>
-				<div class="tab3 tab_body" style="padding-top:15px;">
-					{if count($product.images) > 1}
-						{foreach $product.images as $image}       
-							{$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
-							<div style="float:left;width:702px;margin-bottom:20px;padding:14px;border:1px #ccc solid;"><img src="{$wa->url(true)}{$bImage}" alt="{$product.name}" width="702"/></div>
-						{/foreach}
-					{/if}
-				</div>
-				<div class="tab4 tab_body">
-					<div id="reviews_all" class="reviews" style="overflow: hidden;height: 360px;">
-            <h4>{sprintf('[`%s reviews`]', $product.name)}</h4>
-            <ul class="comments">
-                {foreach $reviews as $review}
-                    <li data-id={$review.id} data-parent-id="0">
-                        {include file="review.html" reply_allowed=false inline}
-                    </li>
-                {/foreach}
-            </ul>
+    <div class="grid_9" >
+        <div id="wrapper_tab" class="tab1">
+            <a href="#" class="tab5 tab_link">Описание</a>
+            <a href="#" class="tab2 tab_link">Характеристики</a>
+            {if count($product.images) > 1}<a href="#" class="tab3 tab_link">Фото</a>{/if}
+            <a href="#" class="tab4 tab_link">Отзывы {if $reviews_total_count}({$reviews_total_count}){/if}</a>
+            <a href="#" class="tab1 tab_link">Всё</a>
+            <div class="clear"></div>
+            <div class="tab5 tab_body">
+                {if $product.description}
+                    <div class="description" id="product-fulldescription" itemprop="description">{$product.description}</div>
+                {/if}
+            </div>
+            <div class="tab2 tab_body">
+                {if $product.features}
+                    <table class="features" id="fullproduct-features" >
+                        {foreach $product.features as $f_code => $f_value}
+                            <tr>
+                                <td>{$features[$f_code].name}</td>
+                                <td>{if is_array($f_value)}{implode(', ', $f_value)}{else}{$f_value}{/if}</td>
+                            </tr>
+                        {/foreach}
+                    </table>
+                {/if}
+            </div>
+            <div class="tab3 tab_body" style="padding-top:15px;">
+                {if count($product.images) > 1}
+                    {foreach $product.images as $image}
+                        {$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
+                        <div style="float:left;width:702px;margin-bottom:20px;padding:14px;border:1px #ccc solid;"><img src="{$wa->url(true)}{$bImage}" alt="{$product.name}" width="702"/></div>
+                    {/foreach}
+                {/if}
+            </div>
+            <div class="clear"></div>
+            <div class="tab4 tab_body">
+                <div id="reviews_all" class="reviews" style="overflow: hidden;height: 360px;">
+                    <h4>{sprintf('[`%s reviews`]', $product.name)}</h4>
+                    <ul class="comments">
+                        {foreach $reviews as $review}
+                            <li data-id={$review.id} data-parent-id="0">
+                                {include file="review.html" reply_allowed=false inline}
+                            </li>
+                        {/foreach}
+                    </ul>
+                </div>
+                {if !$reviews}
+                    <p>{sprintf('[`Be the first to <a href="%s">write a review</a> of this product!`]', 'reviews/')}</p>
+                {else}
+                  <!--{sprintf('[`Read <a href="%s">all %d reviews</a> on %s`]', 'reviews/', $reviews_total_count, $product.name)}-->
+                    <div><div id="show_all_rev_bg"></div>
+                        <span onClick="{literal}all_reviews(); return true;{/literal}" id="show_all_rev">Показать все комментарии ({sprintf($reviews_total_count)} шт.) ⇓</span>
+                    </div>
+                    <a class="reviews_page" href="{$wa->shop->productUrl($product, 'reviews')}">Оставить свой отзыв</a>
+                {/if}                           
+            </div>
         </div>
-        
-        {if !$reviews}
-            <p>{sprintf('[`Be the first to <a href="%s">write a review</a> of this product!`]', 'reviews/')}</p>
-        {else}
-          <!--{sprintf('[`Read <a href="%s">all %d reviews</a> on %s`]', 'reviews/', $reviews_total_count, $product.name)}-->
-                  <div><div id="show_all_rev_bg" style="width: 100%;background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, rgba(255,255,255,0)),color-stop(80%, rgba(255,255,255,1)), color-stop(100%, rgba(255,255,255,1)));background: -webkit-linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);background: -moz-linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);background: -o-linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);background: linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);height: 50px;position: absolute;margin: -50px 0 0 0;"></div><span style="color: #188ab5;display: block;float: left;border-bottom: 1px dashed;width: 270px;text-align: center;cursor: pointer;font-size: 16px;" onClick="{literal}all_reviews(); return true;{/literal}" id="show_all_rev">Показать все комментарии ({sprintf($reviews_total_count)} шт.) ⇓</span></div><a style="width: 160px;display: block;text-decoration: none;text-align: center;cursor: pointer;float: right;margin:  0;color: rgb(255, 255, 255);font-size: 16px;padding: 10px;text-shadow: 0px -1px 0px rgba(30, 30, 30, 0.8);-webkit-border-radius: 2px;-moz-border-radius: 2px;border-radius: 2px;background: rgb(0, 113, 51);background: -moz-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -webkit-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -o-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -ms-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: linear-gradient(0deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);-webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);-moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);" href="{$wa->shop->productUrl($product, 'reviews')}">Оставить свой отзыв</a>
-        {/if}
-				</div>
-				<div class="tab1 tab_body">
-					{if $product.description}
-						<div class="description" id="product-description">{$product.description}</div>
-					{/if}
-					{if $product.features}
-						<table class="features" id="product-features">
-							{foreach $product.features as $f_code => $f_value}
-								<tr>
-									<td>
-										{$features[$f_code].name}
-									</td>
-									<td >
-										{if is_array($f_value)}
-											{implode(', ', $f_value)}
-										{else}
-											{$f_value}
-										{/if}
-									</td>
-								</tr>
-							{/foreach}
-						</table>
-					{/if}
-					{if count($product.images) > 1}
-						{foreach $product.images as $image}       
-							{$bImage =  $wa->shop->getProductImgHtml(['id'=> $product.id, 'image_id' => $image.id, 'ext' => $image.ext], '750x0')|regex_replace:'/^.+src="([^"]+)".*$/':'\1'}
-							<div style="float:left;width:702px;margin-bottom:20px;padding:14px;border:1px #ccc solid;">
-								<img src="{$wa->url(true)}{$bImage}" alt="{$product.name}" width="702"/>
-							</div>
-						{/foreach}
-					{/if}
-					<div class="clear"></div>
-                                        <div class="reviews" id="reviews">
-						<h4>{sprintf('[`%s reviews`]', $product.name)}</h4>
-						<ul class="comments">
-							{foreach $reviews as $review}
-								<li data-id={$review.id} data-parent-id="0">
-									{include file="review.html" reply_allowed=false inline}
-								</li>
-							{/foreach}
-						</ul>
-					</div>
-					{if !$reviews}
-						<p>{sprintf('[`Be the first to <a href="%s">write a review</a> of this product!`]', 'reviews/')}</p>
-					{else}
-						<!--{sprintf('[`Read <a href="%s">all %d reviews</a> on %s`]', 'reviews/', $reviews_total_count, $product.name)}-->
-                  		<a style="width: 160px;display: block;text-decoration: none;text-align: center;cursor: pointer;float: right;margin:  0;color: rgb(255, 255, 255);font-size: 16px;padding: 10px;text-shadow: 0px -1px 0px rgba(30, 30, 30, 0.8);-webkit-border-radius: 2px;-moz-border-radius: 2px;border-radius: 2px;background: rgb(0, 113, 51);background: -moz-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -webkit-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -o-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -ms-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: linear-gradient(0deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);-webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);-moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);" href="{$wa->shop->productUrl($product, 'reviews')}">Оставить свой отзыв</a>
-					{/if}
-				</div>
-			</div>
-		</div>
+    </div>
       
-      <div class="clear"></div>
-      {$upselling = $product->upSelling()}
+    <div class="clear"></div>
+    {$upselling = shopCustomPlugin::getProductsFromOtherCategory()}
+    {*$upselling = $product->upSelling()*}
         {if $upselling}
-			<div class="related" style="margin:25px 0;">
-				<div class="c_header" style="margin-bottom:20px;">
-					<div class="grid_7">
-						<h2>Полезные вещи для туриста
-							{$compare_ids = array_merge(array($product.id), array_keys($upselling))}
-							<a id="compare_button" href="{$wa->getUrl('/frontend/compare', ['id' => implode(',', $compare_ids)])}">Сравнить все</a>
-						</h2>
-					</div><!-- .grid_7 -->
-					<div class="grid_2">
-						<a id="next_c1" class="next arows" href="#"><span>Вперёд</span></a>
-						<a id="prev_c1" class="prev arows" href="#"><span>Назад</span></a>
-					</div><!-- .grid_2 -->
-				</div><!-- .c_header -->
-				<div class="list_carousel">
-					<ul id="list_product" class="list_product">
-                      {include file="list-thumbs.html" products=$upselling}
-					</ul><!-- #list_product -->
-				</div><!-- .list_carousel -->
+            <div class="related" style="margin:25px 0;">
+                <div class="c_header" style="margin-bottom:20px;">
+                    <div class="grid_7">
+                        <h2>Полезные вещи для туриста</h2>
+                    </div><!-- .grid_7 -->
+                    <div class="grid_2">
+                        <a id="next_c1" class="next arows" href="#"><span>Вперёд</span></a>
+                        <a id="prev_c1" class="prev arows" href="#"><span>Назад</span></a>
+                    </div><!-- .grid_2 -->
+                </div><!-- .c_header -->
+                <div class="list_carousel">
+                    <ul id="list_product" class="list_product">
+                        {include file="list-thumbs.html" products=$upselling hide_item_prop = true}
+                    </ul><!-- #list_product -->
+                </div><!-- .list_carousel -->
             </div>
         {/if}     
-		<div class="clear"></div>
+    <div class="clear"></div>
     </div>
 </div>
 <div class="clear"></div>
@@ -424,4 +366,212 @@ $(document).ready(function() {
             </div>
         </div>
     </form>
+</div>
+<img width="150" height="30" border="0" alt="SiteHeart" src="http://siteheart.com/webindicator/image/1303382657?ent=121106&amp;company=121106">
+<img src="http://webindicator.siteheart.com/webindicator/livehelp7?ent=121106&company=121106" border="0" alt="SiteHeart" />
+
+
+
+<div id="tabvanilla" class="widget">
+    <ul id="tabvanilla_ul" class="tabnav ui-tabs-nav">
+        <li class="tabvanilla_li"><a href="#russia" id="a_russia">Контакты в России</a></li>
+        <li class="tabvanilla_li ui-tabs-selected"><a href="#ukraine" id="a_ukraine">Контакты в Украине</a></li>
+        <li class="tabvanilla_li"><a href="#belarus" id="a_belarus">Контакты в Беларуси</a></li>
+    </ul>
+</div>
+<div id="russia" style="float: left; width: 100%;" class="tabdiv ui-tabs-panel ui-tabs-hide">
+    <div style="float: left; width: 100%; margin: 0 auto;">
+        <div style="width: 500px; margin: 0 auto;">
+            <p style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 15px 5px 3px 5px; margin: 0 5px 0 0; width: 220px;"><img height="75" width="75" style="float: left; margin: -13px 5px 0 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/phone-fonarik_ru.png" /> <span style="color: #126199; font-weight: bold; font-size: 20px; margin: 16px 0; display: block;">8 800 555 1092</span></p>
+            <p style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 15px 5px 3px 5px; width: 255px;"><img height="75" width="75" style="float: left; margin: -13px 5px 0 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/herb_moscow_phone.png" /> <span style="color: #126199; font-weight: bold; font-size: 20px; margin: 16px 0; display: block;">+7 (495) 646-13-69</span></p>
+        </div>
+    </div>
+    <div style="width: 100%; height: 20px; border-bottom: 2px dashed #126199; float: left; margin: 0 0 20px 0;"></div>
+    <div style="float: left; width: 100%; margin: 0 0 15px 0;">
+        <div style="float: left; width: 50%;">
+            <h3 style="font-size: 22px;">Режим работы:</h3>
+            <div style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 5px 0 0 5px; margin: 0 0 10px 0;">
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 0; color: #0091d9;">Пн-Пт:</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">С</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">09:00</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">ДО</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">22:00</div>
+            </div>
+            <div style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 5px 0 0 5px; margin: 0 0 10px 0;">
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 0; color: #0091d9;">Сб-Вс:</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">С</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">10:00</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">ДО</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">19:00</div>
+            </div>
+            <div style="float: left;">
+                <div style="padding: 10px 0 0 0;">
+                    <div style="font-size: 14px; font-style: italic; font-weight: bold;">Если у Вас появились вопросы, предложения или жалобы, обращайтесь:</div>
+                    <div style="padding: 10px 0;"><span style="float: left; margin: 0 0 10px 0;"> <img height="85" width="80" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/Phone_contact.png" /> </span> <span style="color: #0091d9; font-size: 24px; line-height: 30px; font-weight: bold; display: block; margin: 25px 0 0 0;">8 800 555 1092</span> <span style="float: left; margin: 3px 10px 0 0;"> <img height="27" width="30" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/warning_phone.png" /> </span> <span style="padding: 0 0 10px 10px; display: block; font-weight: bold; color: #ff6c00;">БЕСПЛАТНО со стационарных телефонов в пределах Российской Федерации.</span></div>
+                    <div style="padding: 10px 0;"><span style="float: left; margin: 0 10px 0 0;"> <img height="75" width="70" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/email.png" /> </span> <a style="color: #0091d9; font-size: 24px; line-height: 30px; font-weight: bold; display: block; margin: 20px 5px; float: left;" href="mailto:info@avantmarket.com">info@fonarik.com</a></div>
+                </div>
+            </div>
+        </div>
+        <div style="float: right; width: 50%;"><form method="post" action="http://main-ip.ru/mail.php" onsubmit="if ( this.name.value!='' &amp;&amp; this.text.value!='' &amp;&amp; this.captcha.value!='' &amp;&amp;  this.pole_1a.value!=''){send_form(this); }else alert('Не все поля заполнены верно.'); return false;"><input type="hidden" value="Обратная связь fonarik.com" name="zagol_soob" />
+            <div style="width: 250px; text-align: left; border: 1px solid #CCCCCC; color: #126199; font: 12px tahoma, verdana; background: #fff; margin: 0 10px; float: right; overflow: hidden; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
+                <div style="text-align: center; background: #126199; color: #ffffff; padding: 5px 5px 5px 5px;">ОБРАТНАЯ СВЯЗЬ</div>
+                <div style="border-top: solid 1px #CCCCCC; padding: 8px 20px 0px 20px; color: #ff6c00;">Ваше имя</div>
+                <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="50" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="name" /></div>
+                <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Ваш e-mail</div>
+                <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="50" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="e_mail" /></div>
+                <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Ваш телефон</div>
+                <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="900" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="pole_1a" /> <input type="hidden" value="Ваш телефон" name="pole_1b" /></div>
+                <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Сообщение</div>
+                <div style="padding: 1px 20px 0px 20px;"><textarea style="width: 200px; height: 70px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="text"> </textarea> <input type="hidden" value="Сообщение с сайта fonarik.com - страница контактов" name="zagol_soob" /></div>
+                <div style="overflow: auto; width: 100%;">
+                    <div style="float: left; padding: 0 10px; color: #ff6c00;">Число на картинке<br /> <input type="text" maxlength="12" style="width: 100px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="captcha" /></div>
+                    <div style="float: right; padding: 6px 0;"><a href="http://main-ip.ru/"><img border="0" src="http://main-ip.ru/captcha.php" /></a></div>
+                </div>
+                <div style="padding: 5px 20px 15px 20px; text-align: center;"><input type="submit" style="cursor: pointer; width: 200px; height: 35px; font: 15px tahoma; color: #ff6c00; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; font-weight: bold;" value="Отправить" /></div>
+            </div>
+        </form></div>
+    </div>
+    <div style="float: left; width: 100%;">
+        <h3 style="font-size: 22px;">Наш адрес:</h3>
+        <div style="width: 500px; height: 455px; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); padding: 10px 10px 20px 10px; float: left;">
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;"> </p>
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;">1-я Дубровская улица, 18</p>
+            <!--p style="font-size: 20px; font-style: italic; line-height: 25px;">5 мин от м. "Дубровка"</p>
+            <span style="color: #ff6c00;">Самовывоз осуществляем только после согласования с менеджером по телефону <strong>+7 (495) 646-13-69</strong></span--><br /><br />
+            <script type="text/javascript" charset="utf-8" src="//api-maps.yandex.ru/services/constructor/1.0/js/?sid=KaXiSNPnT5PNNvjxlKv0DHFc_mf-03F-&amp;width=500&amp;height=320"></script>
+        </div>
+    </div>
+    <div style="float: left; width: 100%;">
+        <div style="width: 95%; float: left; padding: 10px 0px 0px 20px;">
+            <h3 style="font-size: 22px; margin: 25px 0 0 0; float: left;">Наши представители:</h3>
+            <a href="http://fonarik.com/bez-rubriki/priglashaem-stat-predstavitelem-fonarik-com-u-vas-v-regione.html" target="_blank"> <img style="float: right;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/Стань-представителем.gif" /> </a></div>
+        <div style="width: 95%; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); padding: 10px 10px 20px 10px; float: left;">
+            <div style="float: left; width: 45%; margin: 10px 0;"><img style="float: left;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/gerb_belgorod.png" />
+                <p><span style="font-size: 18px; font-weight: bold;">г. Белгород</span>,<br />Народный бульвар, 70<br />1-й этаж, магазин "Свет"<br /> <strong>Тел: (4722) 76-32-93</strong></p>
+            </div>
+            <div style="float: right; width: 45%; margin: 10px 0;"><img style="float: left;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/gerb_voronej.png" />
+                <p><span style="font-size: 18px; font-weight: bold;">г. Воронеж</span>,<br />ул. Куцыгина, 12<br /> <strong>Тел: (473) 24-15-405</strong><br /><strong>Тел: (473) 26-70-131</strong></p>
+            </div>
+            <div style="float: left; width: 45%; margin: 10px 0;"><img style="float: left;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/gerb_lipeck.png" />
+                <p><span style="font-size: 18px; font-weight: bold;">г. Липецк</span>,<br /><span style="color: #ff6c00;">наличие уточняйте</span><br /> <strong>Тел: (906) 590-31-28</strong></p>
+            </div>
+            <div style="float: right; width: 45%; margin: 10px 0;"><img style="float: left;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/gerb_megion.png" />
+                <p><span style="font-size: 18px; font-weight: bold;">г. Мегион</span>,<br />ул. Нефтеразведочная, 2<br />магазин "Яркий свет"<br /> <strong>Тел: (34663) 457-93</strong><br /><span style="color: #ff6c00;">наличие уточняйте</span></p>
+            </div>
+            <div style="float: left; width: 45%; margin: 10px 0;"><img style="float: left;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/gerb_novouralsk.png" />
+                <p><span style="font-size: 18px; font-weight: bold;">г. Новоуральск</span>,<br />ул. Ленина, 21<br />Магазин «Кировский»<br /> <strong>Тел: (34370) 9-45-51</strong></p>
+            </div>
+            <div style="float: right; width: 45%; margin: 10px 0;"><img style="float: left;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/gerb_stavropol.png" />
+                <p><span style="font-size: 18px; font-weight: bold;">г. Ставрополь</span>,<br />Ул. Революции, 27<br />магазин "Техника"<br /> <strong>Тел: (8652) 601-890</strong></p>
+            </div>
+            <div style="float: left; width: 45%; margin: 10px 0;"><img style="float: left;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/gerb_tobolsk.png" />
+                <p><span style="font-size: 18px; font-weight: bold;">г. Тобольск</span>,<br />ул. Строителей, 3<br /><span style="color: #ff6c00;">доставка курьером</span><br /> <strong>Тел: +7 (4843) 44-47-05</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ukraine" style="float: left; width: 100%; display: block;" class="tabdiv ui-tabs-panel">
+    <div style="float: left; width: 100%; margin: 0 auto;">
+        <div style="width: 470px; margin: 0 auto;">
+            <p style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 15px 5px 3px 5px; margin: 0 5px 0 0; width: 220px;"><img height="75" width="75" style="float: left; margin: -13px 5px 0 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/phone-fonarik.png" /> <span style="color: #126199; font-weight: bold; font-size: 20px; margin: 16px 0; display: block;">0 800 50 75 85</span></p>
+            <p style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 15px 5px 3px 5px; width: 225px;"><img height="75" width="75" style="float: left; margin: -13px 5px 0 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/herb_kiev_phone.png" /> <span style="color: #126199; font-weight: bold; font-size: 20px; margin: 16px 0; display: block;">(044) 232-57-81</span></p>
+        </div>
+        <div style="width: 590px; margin: 0 auto;">
+            <p style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 15px 5px 3px 5px; margin: 15px 2px;"><img height="46" width="75" style="float: left; margin: -13px 2px 0 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/mts-logo.png" /> <span style="color: #126199; font-weight: bold; font-size: 14px;">(050) 076-16-36</span></p>
+            <p style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 15px 5px 3px 5px; margin: 15px 2px;"><img height="46" width="75" style="float: left; margin: -13px 2px 0 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/kiyevstar-logo.png" /> <span style="color: #126199; font-weight: bold; font-size: 14px;">(067) 416-10-04</span></p>
+            <p style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 15px 5px 3px 5px; margin: 15px 2px;"><img height="46" width="75" style="float: left; margin: -13px 2px 0 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/life_logo.png" /> <span style="color: #126199; font-weight: bold; font-size: 14px;">(063) 232-57-81</span></p>
+        </div>
+    </div>
+    <div style="width: 100%; height: 20px; border-bottom: 2px dashed #126199; float: left; margin: 0 0 20px 0;"></div>
+    <div style="float: left; width: 100%; margin: 0 0 15px 0;">
+        <div style="float: left; width: 50%;">
+            <h3 style="font-size: 22px;">Режим работы:</h3>
+            <div style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 5px 0 0 5px; margin: 0 0 10px 0;">
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 0; color: #0091d9;">Пн-Пт:</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">С</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">08:00</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">ДО</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">21:00</div>
+            </div>
+            <div style="-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; float: left; box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.5); padding: 5px 0 0 5px; margin: 0 0 10px 0;">
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 0; color: #0091d9;">Сб-Вс:</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">С</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">09:00</div>
+                <div style="float: left; font-size: 16px; font-weight: bold; padding: 38px 5px; color: red;">ДО</div>
+                <div style="float: left; margin: 36px 5px 0 0; font-size: 32px; font-weight: bold;">18:00</div>
+            </div>
+            <div style="float: left;">
+                <div style="padding: 10px 0 0 0;">
+                    <div style="font-size: 14px; font-style: italic; font-weight: bold;">Если у Вас появились вопросы, предложения или жалобы, обращайтесь:</div>
+                    <div style="padding: 10px 0;"><span style="float: left; margin: 0 0 10px 0;"> <img height="85" width="80" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/Phone_contact.png" /> </span> <span style="color: #0091d9; font-size: 24px; line-height: 30px; font-weight: bold; display: block; margin: 25px 0 0 0;">0-800-50-75-85</span> <span style="float: left; margin: 3px 10px 0 0;"> <img height="27" width="30" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/warning_phone.png" /> </span> <span style="padding: 0 0 10px 10px; display: block; font-weight: bold; color: #ff6c00;">Бесплатно по всей территории Украины, с мобильного и городского.</span></div>
+                    <div style="padding: 10px 0;"><span style="float: left; margin: 0 10px 0 0;"> <img height="75" width="70" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/email.png" /> </span> <a style="color: #0091d9; font-size: 24px; line-height: 30px; font-weight: bold; display: block; margin: 20px 5px; float: left;" href="mailto:info@avantmarket.com">info@fonarik.com</a></div>
+                </div>
+            </div>
+        </div>
+        <div style="float: right; width: 50%;"><form method="post" action="http://main-ip.ru/mail.php" onsubmit="if ( this.name.value!='' &amp;&amp; this.text.value!='' &amp;&amp; this.captcha.value!='' &amp;&amp;  this.pole_1a.value!=''){send_form(this); }else alert('Не все поля заполнены верно.'); return false;"><input type="hidden" value="Обратная связь fonarik.com" name="zagol_soob" />
+            <div style="width: 250px; text-align: left; border: 1px solid #CCCCCC; color: #126199; font: 12px tahoma, verdana; background: #fff; margin: 0 10px; float: right; overflow: hidden; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
+                <div style="text-align: center; background: #126199; color: #ffffff; padding: 5px 5px 5px 5px;">ОБРАТНАЯ СВЯЗЬ</div>
+                <div style="border-top: solid 1px #CCCCCC; padding: 8px 20px 0px 20px; color: #ff6c00;">Ваше имя</div>
+                <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="50" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="name" /></div>
+                <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Ваш e-mail</div>
+                <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="50" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="e_mail" /></div>
+                <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Ваш телефон</div>
+                <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="900" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="pole_1a" /> <input type="hidden" value="Ваш телефон" name="pole_1b" /></div>
+                <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Сообщение</div>
+                <div style="padding: 1px 20px 0px 20px;"><textarea style="width: 200px; height: 70px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="text"></textarea> <input type="hidden" value="Сообщение с сайта fonarik.com - страница контактов" name="zagol_soob" /></div>
+                <div style="overflow: auto; width: 100%;">
+                    <div style="float: left; padding: 0 10px; color: #ff6c00;">Число на картинке<br /> <input type="text" maxlength="12" style="width: 100px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="captcha" /></div>
+                    <div style="float: right; padding: 6px 0;"><a href="http://main-ip.ru/"><img border="0" src="http://main-ip.ru/captcha.php" /></a></div>
+                </div>
+                <div style="padding: 5px 20px 15px 20px; text-align: center;"><input type="submit" style="cursor: pointer; width: 200px; height: 35px; font: 15px tahoma; color: #ff6c00; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; font-weight: bold;" value="Отправить" /></div>
+            </div>
+        </form></div>
+    </div>
+    <div style="float: left; width: 100%;">
+        <h3 style="font-size: 22px;">Представители:</h3>
+        <div style="float: left; width: 500px; height: 480px; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); padding: 10px 10px 20px 10px; margin: 0 auto;"><img height="134" width="200" style="float: left; margin: 0 15px 15px 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/dreamtown.png" />
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;">г. Киев</p>
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;">Оболонский проспект, 1Б</p>
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;">ТРЦ «Dream Town» 1-й этаж.</p>
+            <p style="font-size: 20px; font-style: italic; line-height: 25px;">метро «Оболонь»</p>
+            <span style="font-weight: bold; color: #ff6c00;">первая линия, около касс супермаркета "Новус"</span><br /><br />
+            <script type="text/javascript" charset="utf-8" src="//api-maps.yandex.ru/services/constructor/1.0/js/?sid=EhqudenpMe34jhEcRYSrKGccM2jtSsGA&amp;width=500&amp;height=320"></script>
+        </div>
+        <div style="float: left; width: 500px; height: 480px; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -webkit-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); -moz-box-shadow: inset 1px 1px 9px rgba(0, 0, 0, 0.5); padding: 10px 10px 20px 10px; margin: 10px auto 0 auto;"><img height="134" width="200" style="float: left; margin: 0 15px 15px 0;" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/dafi-fonarik.png" />
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;">г. Харьков</p>
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;">ул. Героев труда, 9</p>
+            <p style="font-size: 20px; font-weight: bold; line-height: 25px;">ТРЦ Дафи 2-ой этаж</p>
+            <p style="font-size: 20px; font-style: italic; line-height: 25px;">метро «Героев труда»</p>
+            <span style="font-weight: bold; color: #ff6c00;">направо от лифта, около "Мегаспорта"</span><br /><br /><br />
+            <script type="text/javascript" charset="utf-8" src="//api-maps.yandex.ru/services/constructor/1.0/js/?sid=0g0JyURpIbfwj4YUAoQDGLStA-LrzVrF&amp;width=500&amp;height=320"></script>
+        </div>
+    </div>
+</div>
+<div id="belarus" style="float: left; width: 100%;" class="tabdiv ui-tabs-panel ui-tabs-hide">
+    <div style="float: left; width: 50%;">
+        <div style="padding: 10px 0 0 0;">
+            <div style="font-size: 14px; font-style: italic; font-weight: bold;">Если у Вас появились вопросы, предложения или жалобы, обращайтесь:</div>
+            <div style="padding: 10px 0;"><span style="float: left; margin: 0 0 10px 0;"> <img height="85" width="80" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/Phone_contact.png" /> </span> <span style="color: #0091d9; font-size: 24px; line-height: 30px; font-weight: bold; display: block; margin: 25px 0 0 0;">8 800 555 1092</span> <span style="float: left; margin: 3px 10px 0 0;"> <img height="27" width="30" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/warning_phone.png" /> </span> <span style="padding: 0 0 10px 10px; display: block; font-weight: bold; color: #ff6c00;">БЕСПЛАТНО со стационарных телефонов в пределах Российской Федерации.</span></div>
+            <div style="padding: 10px 0;"><span style="float: left; margin: 0 0 10px 0;"> <img height="85" width="80" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/Phone_contact.png" /> </span> <span style="color: #0091d9; font-size: 24px; line-height: 30px; font-weight: bold; display: block; margin: 25px 0 0 0;">+7 (495) 646-13-69</span> <span style="float: left; margin: 3px 10px 0 0;"> <img height="27" width="30" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/warning_phone.png" /> </span> <span style="padding: 0 0 10px 10px; display: block; font-weight: bold; color: #ff6c00;">Москва</span></div>
+            <div style="padding: 10px 0;"><span style="float: left; margin: 0 10px 0 0;"> <img height="75" width="70" src="http://fonarik.com/market/published/publicdata/FONARIKMARKET3/attachments/SC/images/email.png" /> </span> <a style="color: #0091d9; font-size: 24px; line-height: 30px; font-weight: bold; display: block; margin: 20px 5px; float: left;" href="mailto:info@avantmarket.com">info@fonarik.com</a></div>
+        </div>
+    </div>
+    <div style="float: right; width: 50%;"><form method="post" action="http://main-ip.ru/mail.php" onsubmit="if ( this.name.value!='' &amp;&amp; this.text.value!='' &amp;&amp; this.captcha.value!='' &amp;&amp;  this.pole_1a.value!=''){send_form(this); }else alert('Не все поля заполнены верно.'); return false;"><input type="hidden" value="Обратная связь fonarik.com" name="zagol_soob" />
+        <div style="width: 250px; text-align: left; border: 1px solid #CCCCCC; color: #126199; font: 12px tahoma, verdana; background: #fff; margin: 0 10px; float: right; overflow: hidden; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;">
+            <div style="text-align: center; background: #126199; color: #ffffff; padding: 5px 5px 5px 5px;">ОБРАТНАЯ СВЯЗЬ</div>
+            <div style="border-top: solid 1px #CCCCCC; padding: 8px 20px 0px 20px; color: #ff6c00;">Ваше имя</div>
+            <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="50" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="name" /></div>
+            <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Ваш e-mail</div>
+            <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="50" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="e_mail" /></div>
+            <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Ваш телефон</div>
+            <div style="padding: 1px 20px 0px 20px;"><input type="text" maxlength="900" style="width: 200px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="pole_1a" /> <input type="hidden" value="Ваш телефон" name="pole_1b" /></div>
+            <div style="padding: 8px 20px 0px 20px; color: #ff6c00;">Сообщение</div>
+            <div style="padding: 1px 20px 0px 20px;"><textarea style="width: 200px; height: 70px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="text"></textarea> <input type="hidden" value="Сообщение с сайта fonarik.com - страница контактов" name="zagol_soob" /></div>
+            <div style="overflow: auto; width: 100%;">
+                <div style="float: left; padding: 0 10px; color: #ff6c00;">Число на картинке<br /> <input type="text" maxlength="12" style="width: 100px; height: 20px; background: #FFFFFF; border: 1px solid #CCCCCC; color: #000;" name="captcha" /></div>
+                <div style="float: right; padding: 6px 0;"><a href="http://main-ip.ru/"><img border="0" src="http://main-ip.ru/captcha.php" /></a></div>
+            </div>
+            <div style="padding: 5px 20px 15px 20px; text-align: center;"><input type="submit" style="cursor: pointer; width: 200px; height: 35px; font: 15px tahoma; color: #ff6c00; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; font-weight: bold;" value="Отправить" /></div>
+        </div>
+    </form></div>
 </div>

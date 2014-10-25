@@ -84,6 +84,7 @@
 	float:left;
 	position:absolute;
         display: none;
+    opacity: 0;
 /*	left:-999em; /* Скрываем выпадающие пункты */
 	text-align:left;
 	padding:10px 5px 10px 5px;
@@ -115,7 +116,39 @@
 	left:-1px;
 	top:auto;
         position: absolute;
-        display: block;
+    display: block;
+    opacity: 1;
+    -webkit-animation: fadein 1s; /* Safari, Chrome and Opera > 12.1 */
+    -moz-animation: fadein 1s; /* Firefox < 16 */
+    -ms-animation: fadein 1s; /* Internet Explorer */
+    -o-animation: fadein 1s; /* Opera < 12.1 */
+    animation: fadein 1s;
+}
+@keyframes fadein {
+    0% { opacity: 0; }
+    80% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Firefox < 16 */
+@-moz-keyframes fadein {
+    0% { opacity: 0; }
+    80% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Safari, Chrome and Opera > 12.1 */
+@-webkit-keyframes fadein {
+    0% { opacity: 0; }
+    80% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Internet Explorer */
+@-ms-keyframes fadein {
+    0% { opacity: 0; }
+    80% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 .col_1,

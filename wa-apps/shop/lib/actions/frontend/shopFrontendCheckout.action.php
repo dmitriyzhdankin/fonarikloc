@@ -130,33 +130,29 @@ class shopFrontendCheckoutAction extends waViewAction
             $app = wa()->getAppInfo();
             $title = $app['name'];
         }
-
-        $result =  "_gaq.push(['_addTrans',
-            '".$order['id']."',           // transaction ID - required
-            '".htmlspecialchars($title)."',  // affiliation or store name
-            '".$this->getBasePrice($order['total'], $order['currency'])."',          // total - required
-            '".$this->getBasePrice($order['tax'], $order['currency'])."',           // tax
-            '".$this->getBasePrice($order['shipping'], $order['currency'])."',              // shipping
-            '".$this->getOrderAddressField($order, 'city')."',       // city
-            '".$this->getOrderAddressField($order, 'region')."',     // state or province
-            '".$this->getOrderAddressField($order, 'country')."'             // country
-        ]);\n";
+        $result = "ga('require', 'ecommerce');";
+        $result .= "ga('ecommerce:addTransaction', {
+              'id': '".$order['id']."',                     // Transaction ID. Required.
+              'affiliation': '".htmlspecialchars($title)."',   // Affiliation or store name.
+              'revenue': '".$this->getBasePrice($order['total'], $order['currency'])."',               // Grand Total.
+              'shipping': '".$this->getBasePrice($order['shipping'], $order['currency'])."',                  // Shipping.
+              'tax': '".$this->getBasePrice($order['tax'], $order['currency'])."',                     // Tax.
+              'currency': '".$this->getConfig()->getCurrency(true)."'
+            });\n";
 
         foreach ($order['items'] as $item) {
             $sku = $item['type'] == 'product' ? $item['sku_code'] : '';
-            $result .= " _gaq.push(['_addItem',
-            '".$order['id']."',           // transaction ID - required
-            '".$sku."',           // SKU/code - required
-            '".htmlspecialchars($item['name'])."',        // product name
-            '',   // category or variation
-            '".$this->getBasePrice($item['price'], $order['currency'])."',          // unit price - required
-            '".$item['quantity']."'               // quantity - required
-          ]);\n";
+            $result .= "ga('ecommerce:addItem', {
+                    'id': '".$order['id']."',                     // Transaction ID. Required.
+                    'name': '".htmlspecialchars($item['name'])."',    // Product name. Required.
+                    'sku': '".$sku."',                 // SKU/code.
+                    'category': '',         // Category or variation.
+                    'price': '".$this->getBasePrice($item['price'], $order['currency'])."',                 // Unit price.
+                    'quantity': '".$item['quantity']."'                   // Quantity.
+                });\n";
         }
 
-        $result .= "_gaq.push(['_set', 'currencyCode', '".$this->getConfig()->getCurrency(true)."']);\n";
-        $result .= "_gaq.push(['_trackTrans']);\n";
-
+        $result .= "ga('ecommerce:send');\n";
         return $result;
     }
 
@@ -189,17 +185,17 @@ class shopFrontendCheckoutAction extends waViewAction
         unset($item);
 
         // Round price
-	$pitems = $items;
+        $pitems = $items;
         $config = wa('shop')->getConfig();
         $primary = $config->getCurrency(true);
         $currency = $config->getCurrency(false);
         foreach($pitems as $ikey => $pitem){
-                $newprice = $pitem['price'];
-                $currencies = wa('shop')->getConfig()->getCurrencies(array($pitem['currency'], $currency));
-                $items[$ikey]['price'] = ceil($newprice * $currencies[$pitem['currency']]['rate']);
-                $items[$ikey]['currency'] = $currency;
-                $pnewprice = ceil($pitem['product']['price']);
-                $items[$ikey]['product']['price'] = $pnewprice;
+            $newprice = $pitem['price'];
+            $currencies = wa('shop')->getConfig()->getCurrencies(array($pitem['currency'], $currency));
+            $items[$ikey]['price'] = ceil($newprice * $currencies[$pitem['currency']]['rate']);
+            $items[$ikey]['currency'] = $currency;
+            $pnewprice = ceil($pitem['product']['price']);
+            $items[$ikey]['product']['price'] = $pnewprice;
         }
 
         $order = array(
@@ -304,17 +300,17 @@ class shopFrontendCheckoutAction extends waViewAction
 
         $workflow = new shopWorkflow();
         if ($order_id = $workflow->getActionById('create')->run($order)) {
-            
+
             $step_number = shopCheckout::getStepNumber();
             $checkout_flow = new shopCheckoutFlowModel();
             $checkout_flow->add(array(
                 'step' => $step_number
             ));
-            
+
             $cart->clear();
             wa()->getStorage()->remove('shop/checkout');
             wa()->getStorage()->set('shop/order_id', $order_id);
-            
+
             return true;
         }
     }

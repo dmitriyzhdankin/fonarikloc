@@ -12,94 +12,114 @@
      </div></div>
     {/if}
     
-    {if isset($product) }
-    {$crossselling = $product->crossSelling(0)}
-      {if $crossselling}
-			<div class="related" style="margin-bottom:25px;">
-				<div class="c_header" style="margin-bottom:20px;">
-					<div class="grid_7">
-						<h2>Также покупают:</h2>
-					</div><!-- .grid_7 -->
-					<div class="grid_2">
-						<a id="next_c2" class="next arows" href="#"><span>Вперёд</span></a>
-						<a id="prev_c2" class="prev arows" href="#"><span>Назад</span></a>
-					</div><!-- .grid_2 -->
-				</div><!-- .c_header -->
-				<div id="crossselling-sidebar" class="list_carousel">
-					<ul id="list_product3" class="list_product">
-						{include file="list-thumbs.html" products=$crossselling}
-					</ul><!-- #list_product -->
-				</div><!-- .list_carousel -->
+    {$same_products = shopCustomPlugin::getSameProducts()}
+    {$same_category = shopCustomPlugin::getProductCategory()}
+    {if $same_products }
+        <div class="related" style="margin-bottom:25px;">
+            <div class="c_header" style="margin-bottom:20px;">
+                <div class="grid_7">
+                    <h2>Похожие {$same_category}</h2>
+                </div><!-- .grid_7 -->
+                <div class="grid_2">
+                    <a id="next_c2" class="next arows" href="#"><span>Вперёд</span></a>
+                    <a id="prev_c2" class="prev arows" href="#"><span>Назад</span></a>
+                </div><!-- .grid_2 -->
+            </div><!-- .c_header -->
+            <div id="crossselling-sidebar" class="list_carousel">
+                <ul id="list_product3" class="list_product">
+                    {include file="list-thumbs.html" products=$same_products hide_item_prop = true}
+                </ul><!-- #list_product -->
+            </div><!-- .list_carousel -->
+        </div>
+    {/if}
+    
+    {*if isset($product) }
+        {$crossselling = $product->crossSelling(0)}
+        {if $crossselling}
+            <div class="related" style="margin-bottom:25px;">
+                <div class="c_header" style="margin-bottom:20px;">
+                    <div class="grid_7">
+                        <h2>Также покупают:</h2>
+                    </div><!-- .grid_7 -->
+                    <div class="grid_2">
+                        <a id="next_c2" class="next arows" href="#"><span>Вперёд</span></a>
+                        <a id="prev_c2" class="prev arows" href="#"><span>Назад</span></a>
+                    </div><!-- .grid_2 -->
+                </div><!-- .c_header -->
+                <div id="crossselling-sidebar" class="list_carousel">
+                    <ul id="list_product3" class="list_product">
+                        {include file="list-thumbs.html" products=$crossselling}
+                    </ul><!-- #list_product -->
+                </div><!-- .list_carousel -->
             </div>
-		{/if}
-                {/if}
+	{/if}
+    {/if*}
     <!-- category tree -->
  {if $categories = $wa->shop->categories()} 
-  {if !isset($category) && !$category.id}
-  {*<div class="aside" id="categories_nav">
-		<h3>Категории</h3>            
-		<div class="left_menu"><ul>
+    {if !isset($category) || !$category.id}
+    {*<div class="aside" id="categories_nav">
+                  <h3>Категории</h3>            
+                  <div class="left_menu"><ul>
+          {foreach $categories as $c}
+          {if $c.parent_id == 0}
+          <li><a href="{$c.url}">{$c.name|escape}</a></li>
+          {/if}
+          {/foreach}
+       </ul></div><!-- .left_menu -->
+    </div> *}
+    {else}
         {foreach $categories as $c}
-        {if $c.parent_id == 0}
-        <li><a href="{$c.url}">{$c.name|escape}</a></li>
+            {if isset($category) && $category.id == $c.parent_id}
+            {$childs= 1}
+            {/if}
+        {/foreach}
+        {if $childs}
+        <div class="aside" id="categories_nav">
+              <h3>Категории</h3>            
+              <div class="left_menu"><ul>
+              {foreach $categories as $c}
+              {if isset($category) && $category.id == $c.parent_id}
+              <li {if $category.id == $c.id}class="current"{/if}><a href="{$c.url}">{$c.name|escape}</a></li>
+              {/if} 
+              {/foreach}
+           </ul></div><!-- .left_menu -->
+        </div>
+        {else}
+            <div class="aside" id="categories_nav">
+                <h3>Категории</h3>            
+                <div class="left_menu"><ul>
+                    {foreach $categories as $c}
+                    {if $category.parent_id == $c.parent_id && $c.parent_id != 0}
+                    <li {if $category.id == $c.id}class="current"{/if}><a href="{$c.url}">{$c.name|escape}</a></li>
+                    {/if} 
+                    {/foreach}
+                </ul></div><!-- .left_menu -->
+            </div>
         {/if}
-        {/foreach}
-     </ul></div><!-- .left_menu -->
-  </div> *}
-  {else}
-  {foreach $categories as $c}
-   {if $category.id == $c.parent_id}
-   {$childs= 1}
-   {/if}
-  {/foreach}
-  {if $childs}
-  <div class="aside" id="categories_nav">
-	<h3>Категории</h3>            
-	<div class="left_menu"><ul>
-        {foreach $categories as $c}
-        {if $category.id == $c.parent_id}
-        <li {if $category.id == $c.id}class="current"{/if}><a href="{$c.url}">{$c.name|escape}</a></li>
-        {/if} 
-        {/foreach}
-     </ul></div><!-- .left_menu -->
-  </div>
-  {else}
-  <div class="aside" id="categories_nav">
-	<h3>Категории</h3>            
-	<div class="left_menu"><ul>
-        {foreach $categories as $c}
-        {if $category.parent_id == $c.parent_id && $c.parent_id != 0}
-        <li {if $category.id == $c.id}class="current"{/if}><a href="{$c.url}">{$c.name|escape}</a></li>
-        {/if} 
-        {/foreach}
-     </ul></div><!-- .left_menu -->
-  </div>
-
-  {/if}
-  {/if}
+    {/if}
  {/if}
     
-    {if $wa->get($filter.code, array())}
-     <div class="aside">
-		     <h3>Выбранные фильтры:</h3>		     
-		     <div class="currently_shopping">
-			    <ul>
-                {foreach $filters as $fid => $filter}
+{if isset($filter) && $wa->get($filter.code, array())}
+    <div class="aside">
+        <h3>Выбранные фильтры:</h3>		     
+        <div class="currently_shopping">
+            <ul>
+            {foreach $filters as $fid => $filter}
                 {if $fid == 'price'}
-                {$c = $wa->shop->currency(true)}
-                 <li>Цена от: <span>{if $wa->get('price_min')}{(int)$wa->get('price_min')}{/if}</span> до: <span>{if $wa->get('price_max')}{(int)$wa->get('price_max')}{/if}</span> {$c.sign}</li>
+                    {$c = $wa->shop->currency(true)}
+                    <li>Цена от: <span>{if $wa->get('price_min')}{(int)$wa->get('price_min')}{/if}</span> до: <span>{if $wa->get('price_max')}{(int)$wa->get('price_max')}{/if}</span> {$c.sign}</li>
                 {/if}
-                 {foreach $filter.values as $v_id => $v}
-                 {if in_array($v_id, $wa->get($filter.code, array()))}
-                 <li>{$filter.name}: <span>{$v}</span></li>
-                 {/if}
+                {foreach $filter.values as $v_id => $v}
+                    {if in_array($v_id, $wa->get($filter.code, array()))}
+                    <li>{$filter.name}: <span>{$v}</span></li>
+                    {/if}
                 {/foreach}
-                {/foreach}
-			    </ul>	 
-			    <div class="clear"></div>
-		     </div><!-- .currently_shopping -->		 
-	 </div><!-- #shop_by -->  
-    {/if}
+            {/foreach}
+            </ul>	 
+            <div class="clear"></div>
+        </div><!-- .currently_shopping -->		 
+    </div><!-- #shop_by -->  
+{/if}
     
     {if !empty($filters)}
      <div class="aside">
@@ -128,15 +148,15 @@
     {/if}
     
     <!-- tag cloud -->
-    <!--{if $cloud = $wa->shop->tags()}
+    {*if $cloud = $wa->shop->tags()}
    <div class="aside" id="tags">
 		     <h3>Теги</h3>      
             {foreach $cloud as $tag}
                 <a href="{$wa_app_url}tag/{$tag.uri_name}/" style="font-size: {$tag.size}%;">{$tag.name|escape}</a>
             {/foreach}
     </div>
-    {/if}-->
-    {if $same_products }
+    {/if*}
+    {*if $same_products }
     <!-- products from same category -->
     <div class="same-products">
         <h3>{$same_category}:</h3>
@@ -152,4 +172,4 @@
             {/foreach}
         </div>
     </div>
-    {/if}
+    {/if*}

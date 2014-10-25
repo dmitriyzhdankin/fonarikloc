@@ -292,7 +292,8 @@ class shopCsvProductrunController extends waLongActionController
                 if ($parents) {
                     $features += $features_model->getById($parents);
                 }
-
+            } elseif ( preg_match('@^type/(.+)$@', $this->data['hash'], $matches) ) {
+                $features = $features_model->getByType($matches[1]);
             } else {
                 $features = $features_model->getAll();
             }
@@ -300,7 +301,7 @@ class shopCsvProductrunController extends waLongActionController
                 $options['features'] = true;
                 foreach ($features as $feature) {
                     if (!preg_match('/\.\d$/', $feature['code']) && ($feature['type'] != shopFeatureModel::TYPE_DIVIDER)) {
-                        $map[sprintf('features:%s', $feature['code'])] = $feature['name'];
+                        $map[sprintf('features:%s', $feature['code'])] = $feature['name'] .'_|_'. $feature['code'];
                         if ($encoding != 'UTF-8') {
                             $this->data['composite_features'][$feature['code']] = true;
                         }

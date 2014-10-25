@@ -3,9 +3,9 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
-<title>{$wa->title()|escape}</title>
-<meta name="Keywords" content="{$wa->meta('keywords')|escape}" >
-<meta name="Description" content="{$wa->meta('description')|escape}" >
+<title>{if isset($product) && $product.name == $wa->title()}Купить {$wa->title()|escape|lower} с доставкой: Киев, Харьков, Украина | Цены от интернет-магазина fonarik.ua{else}{$wa->title()|escape}{/if}</title>
+<meta name="Keywords" content="{if $wa->meta('keywords')}{$wa->meta('keywords')|escape}{else}{if $product}{$product.name|escape}{/if}{/if}">
+<meta name="Description" content="{if $wa->meta('description') }{$wa->meta('description')|escape}{else}{if $product}Интернет-магазин fonarik.ua продает {$wa->title()|escape|lower} с доставкой по Киеву, Харькову, Украине. Лучшая цена! Купит {$wa->title()|escape|lower} на fonarik.ua +38 (044) 392-19-00{/if}{/if}">
 <meta name="google-site-verification" content="HgxM5mlLK6npvnMkRhl7Bcs-1uABQjKYeeq6zbmKtb0">
 <meta name="yandex-verification" content="5eb55ef94d5b056b" >
 	

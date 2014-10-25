@@ -1,7 +1,7 @@
-<div class="cart" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+<div class="cart" {if !isset($hide_item_prop) || !$hide_item_prop}itemprop="offers" itemscope itemtype="http://schema.org/Offer"{/if}>
     <div class="price">
         <div class="vert">
-          <div class="price_new" itemprop="price">{shop_currency($p.price|ceil)}</div>
+          <div class="price_new" {if !isset($hide_item_prop) || !$hide_item_prop}itemprop="price"{/if}>{shop_currency($p.price|ceil)}</div>
           {if $p.compare_price > 0 }<div class="price_old" itemprop="price">{shop_currency($p.compare_price|ceil)}</div>{/if}
         </div>
     </div>
@@ -9,5 +9,5 @@
         <input type="hidden" name="product_id" value="{$p.id}">
         <input type="submit" {if $p.price eq 0 || (!$wa->shop->settings('ignore_stock_count') && $p.count !== null && $p.count <= 0) }disabled="disabled" style="background:#CCC;"{/if} value="Купить" onclick="{literal}open_pop_up('#onclick_buy');{/literal}">
     </form>
-    <link itemprop="availability" href="http://schema.org/{if $wa->shop->settings('ignore_stock_count') || $p.count === null || $p.count > 0}InStock{else}OutOfStock{/if}" >
+    {if !isset($hide_item_prop) || !$hide_item_prop}<link itemprop="availability" href="http://schema.org/{if $wa->shop->settings('ignore_stock_count') || $p.count === null || $p.count > 0}InStock{else}OutOfStock{/if}" >{/if}
 </div>

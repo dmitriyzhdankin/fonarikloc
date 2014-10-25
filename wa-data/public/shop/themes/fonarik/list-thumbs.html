@@ -1,21 +1,27 @@
-   {foreach $products as $p}
-		     <div class="grid_3 product" itemscope itemtype ="http://schema.org/Product">
+   {foreach $products as $p name=test}
+            <div class="grid_3 product" {if !isset($hide_item_prop) || !$hide_item_prop}itemscope itemtype ="http://schema.org/Product"{/if}>
 			    <div class="prev">
                 <a href="{$p.frontend_url}" title="{if $p.summary}{strip_tags($p.summary)}{/if}">
-                    {$badge_html = $wa->shop->badgeHtml($product.badge)}
+                    {$badge_html = $wa->shop->badgeHtml($p.badge)}
                     {if $badge_html}
                         <div class="corner top right">{$badge_html}</div>
                     {/if}
-                {$wa->shop->productImgHtml($p, '200x200', ['itemprop' => 'image', 'default' => "`$wa_theme_url`img/dummy200.png", 'alt' => $p.name])}
+                    {$params = ['default' => "`$wa_theme_url`img/dummy200.png", 'alt' => $p.name]}
+                    
+                    {if !isset($hide_item_prop) || !$hide_item_prop}
+                    {$params['itemprop'] = 'image'}
+                    {/if}
+                    
+                {$wa->shop->productImgHtml($p, '200x200',$params )}
                     </a></div>
                 {$reviews_total_count = shopCustomPlugin::getReviewsCount($p.id)}
                 <div class="product-rating">
                 {if !empty($p.rating) && $p.rating > 0}
-                        <span class="rating nowrap" itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" title="{sprintf('[`Average user rating: %s / 5`]', $product.rating)}">
+                        <span class="rating nowrap" {if !isset($hide_item_prop) || !$hide_item_prop}itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating"{/if} title="{sprintf('[`Average user rating: %s / 5`]', $product.rating)}">
                             {$wa->shop->ratingHtml($p.rating, 16)}
-                            <span itemprop="ratingValue" style="display: none;" itemprop="ratingValue">{$p.rating}</span>
-                            <span itemprop="reviewCount" style="display: none;" itemprop="ratingCount">{$p.rating_count}</span>
-                            <span itemprop="bestRating" style="display: none;">5</span>
+                            <span {if !isset($hide_item_prop) || !$hide_item_prop}itemprop="ratingValue" itemprop="ratingValue"{/if} style='display:none;'>{$p.rating}</span>
+                            <span {if !isset($hide_item_prop) || !$hide_item_prop}itemprop="reviewCount" itemprop="ratingCount"{/if} style='display: none;'>{$p.rating_count}</span>
+                            <span {if !isset($hide_item_prop) || !$hide_item_prop}itemprop="bestRating"{/if} style="display: none;">5</span>
                         </span>
                 {else}
                     <span class="rating nowrap">
@@ -31,6 +37,7 @@
                 {/if}
                 </div>
                <a href="{$p.frontend_url}" title="{if $p.summary}{strip_tags($p.summary)}{/if}"><span class="title">{$p.name}</span></a>
-               {include file='product-price-cart.html' p=$p}
+                {if !isset($hide_item_prop)} {$hide_item_prop = false}{/if}
+               {include file='product-price-cart.html' p=$p hide_item_prop = $hide_item_prop}
             </div> 
     {/foreach} 

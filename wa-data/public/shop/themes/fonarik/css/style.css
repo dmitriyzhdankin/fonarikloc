@@ -2133,6 +2133,10 @@ z-index: 98;
 	display:none;
 }
 #wrapper_tab.tab1 div.tab1,
+#wrapper_tab.tab1 div.tab2,
+#wrapper_tab.tab1 div.tab3,
+#wrapper_tab.tab1 div.tab4,
+#wrapper_tab.tab1 div.tab5,
 #wrapper_tab.tab2 div.tab2,
 #wrapper_tab.tab3 div.tab3,
 #wrapper_tab.tab4 div.tab4,
@@ -2284,6 +2288,36 @@ z-index: 98;
 }
 #content ul.comments ul.menu-v {
     list-style: none outside none;
+}
+
+#product-reivew-form ul.menu-h.auth-type {
+    list-style: none;
+    padding-bottom: 20px;
+}
+.reviews ul.menu-h.auth-type li {
+    display: inline-block;
+    list-style: none outside none;
+    padding: 0 10px 0 0;
+}
+.reviews ul.menu-h.auth-type li a {
+    padding: 5px 6px;
+}
+.review-form ul.menu-h.auth-type li a img {
+    float: left;
+    margin-right: 3px;
+    position: relative;
+    top: 2px;
+}
+#content ul.comments li ul.comments li {
+    margin-left: 35px;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+#content ul.comments ul.menu-v {
+    list-style: none outside none;
+}
+.reviews li:nth-of-type(2n+1) {
+    background-color: #eee;
 }
 /*** Related Products ***/
 .related .c_header {
@@ -4136,7 +4170,7 @@ table.table .badge span { display: block; width: 20px; overflow: hidden; padding
 /** fancybox */
 .fancybox-title form.addtocart .cart {
     height: 40px;
-    margin: -60px auto 0;
+    margin: 0 auto;
     width: 235px;
 }
 .fancybox-title form.addtocart input[type="submit"], .fancybox-title input.bay {
@@ -4180,3 +4214,21 @@ tbody tr:nth-child(even) {
 .product-rating a {
     text-decoration: underline;
 }
+#sidebar h2 {
+    max-width: 228px;
+}
+#show_all_rev_bg {
+    width: 100%;
+    background: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, rgba(255,255,255,0)),color-stop(80%, rgba(255,255,255,1)), color-stop(100%, rgba(255,255,255,1)));
+    background: -webkit-linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);
+    background: -moz-linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);
+    background: -o-linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);
+    background: linear-gradient(rgba(255,255,255,0) 0%,rgba(255,255,255,1) 80%,rgba(255,255,255,1) 100%);
+    height: 50px;
+    position: absolute;
+    margin: -50px 0 0 0;
+}
+#show_all_rev {
+    color: #188ab5;display: block;float: left;border-bottom: 1px dashed;width: 270px;text-align: center;cursor: pointer;font-size: 16px;
+}
+.reviews_page { width: 160px;display: block;text-decoration: none;text-align: center;cursor: pointer;float: right;margin:  0;color: rgb(255, 255, 255);font-size: 16px;padding: 10px;text-shadow: 0px -1px 0px rgba(30, 30, 30, 0.8);-webkit-border-radius: 2px;-moz-border-radius: 2px;border-radius: 2px;background: rgb(0, 113, 51);background: -moz-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -webkit-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -o-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: -ms-linear-gradient(90deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);background: linear-gradient(0deg, rgb(0, 113, 51) 0%, rgb(0, 173, 51) 100%);-webkit-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);-moz-box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75);box-shadow: 0px 2px 1px rgba(50, 50, 50, 0.75); }
